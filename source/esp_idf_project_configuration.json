@@ -570,5 +570,31 @@
       "postBuild": "",
       "postFlash": ""
     }
+  },
+  "ESP32S3": {
+    "build": {
+      "compileArgs": [],
+      "ninjaArgs": [],
+      "buildDirectoryPath": "${workspaceFolder}/build_esp32s3",
+      "sdkconfigDefaults": [
+        "sdkconfig.defaults",
+        "sdkconfig.esp32s3"        
+      ],
+      "sdkconfigFilePath": "${workspaceFolder}/build_esp32s3"
+    },
+    "env": {},
+    "flashBaudRate": "",
+    "monitorBaudRate": "",
+    "openOCD": {
+      "debugLevel": 0,
+      "configs": [],
+      "args": []
+    },
+    "tasks": {
+      "preBuild": "",
+      "preFlash": "",
+      "postBuild": "",
+      "postFlash": ""
+    }
   }
 }
