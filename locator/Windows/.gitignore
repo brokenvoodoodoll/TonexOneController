@@ -1,8 +1,0 @@
-# macOS folder attributes
-.DS_Store
-
-obj
-bin/Debug
-
-
-
