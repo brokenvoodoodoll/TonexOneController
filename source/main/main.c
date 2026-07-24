@@ -59,7 +59,6 @@ limitations under the License.
 #include "usb_tonex_one.h"
 #include "footswitches.h"
 #include "control.h"
-#include "midi_control.h"
 #include "CH422G.h"
 #include "LP5562.h"
 #include "midi_serial.h"
@@ -281,17 +280,6 @@ void app_main(void)
     else
     {
         footswitches_init(ic2_bus_handle_2, EXTERNAL_IO_EXPANDER_MUTEX);
-    }
-
-    if (control_get_config_item_int(CONFIG_ITEM_BT_MODE) != BT_MODE_DISABLED)
-    {
-        // init Midi Bluetooth
-        ESP_LOGI(TAG, "Init MIDI BT");
-        midi_init();
-    }
-    else
-    {
-        ESP_LOGI(TAG, "MIDI BT disabled");
     }
 
     if (control_get_config_item_int(CONFIG_ITEM_MIDI_ENABLE))

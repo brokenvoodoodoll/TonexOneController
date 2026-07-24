@@ -68,7 +68,6 @@ limitations under the License.
 #include "CH422G.h"
 #include "control.h"
 #include "task_priorities.h"
-#include "midi_control.h"
 #include "LP5562.h"
 #include "tonex_params.h"
 

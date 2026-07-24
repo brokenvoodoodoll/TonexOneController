@@ -1,5 +1,4 @@
 idf_component_register(SRCS
-                       "midi_control.c"
                        "control.c"
                        "footswitches.c"
                        "CH422G.c"
