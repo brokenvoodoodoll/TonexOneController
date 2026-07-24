@@ -8,7 +8,6 @@ idf_component_register(SRCS
                        "usb_tonex_common.c"
                        "usb_tonex.c"
                        "midi_serial.c"
-                       "leds.c"
                        "midi_helper.c"
                        "midi_helper_tonex.c"
                        "platform_devkitc.c"

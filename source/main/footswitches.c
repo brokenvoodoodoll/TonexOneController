@@ -39,7 +39,6 @@ limitations under the License.
 #include "usb/usb_host.h"
 #include "usb_comms.h"
 #include "usb_tonex_one.h"
-#include "leds.h"
 #include "midi_helper.h"
 #include "tonex_params.h"
 
@@ -766,9 +765,6 @@ void footswitch_task(void *arg)
             }
         }
 
-        // handle leds from this task, to save wasting ram on another task for it
-        leds_handle();
-
         vTaskDelay(pdMS_TO_TICKS(20));
     }
 }
@@ -803,9 +799,6 @@ void footswitches_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2C
     gpio_config_struct.pull_down_en = GPIO_PULLDOWN_DISABLE;
     gpio_config_struct.intr_type = GPIO_INTR_DISABLE;
     gpio_config(&gpio_config_struct);
-
-    // init leds
-    leds_init();
 
     // create task
     xTaskCreatePinnedToCore(footswitch_task, "FOOT", FOOTSWITCH_TASK_STACK_SIZE, NULL, FOOTSWITCH_TASK_PRIORITY, NULL, 1);

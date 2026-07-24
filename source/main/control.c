@@ -42,7 +42,6 @@ limitations under the License.
 #include "task_priorities.h"
 #include "tonex_params.h"
 #include "midi_helper.h"
-#include "leds.h"
 
 #define CTRL_TASK_STACK_SIZE                (3 * 1024)
 

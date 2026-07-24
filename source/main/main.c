@@ -60,7 +60,6 @@ limitations under the License.
 #include "footswitches.h"
 #include "control.h"
 #include "midi_serial.h"
-#include "leds.h"
 #include "tonex_params.h"
 #include "platform_common.h"
 
