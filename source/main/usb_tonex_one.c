@@ -58,7 +58,6 @@ limitations under the License.
 #include "usb_tonex_common.h"
 #include "usb_tonex_one.h"
 #include "control.h"
-#include "display.h"
 #include "tonex_params.h"
 
 static const char *TAG = "app_TonexOne";
@@ -1180,7 +1179,7 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                         if (uxQueueMessagesWaiting(input_queue) == 0)
                         {
                             // signal to refresh param UI with Globals
-                            UI_RefreshParameterValues();
+                            // UI_RefreshParameterValues();
 
                             // refresh the footswitch leds
                             control_update_footswitch_leds();
@@ -1232,7 +1231,7 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                         if (uxQueueMessagesWaiting(input_queue) == 0)
                         {
                             // signal to refresh param UI
-                            UI_RefreshParameterValues();
+                            // UI_RefreshParameterValues();
 
                             // refresh the footswitch leds
                             control_update_footswitch_leds();

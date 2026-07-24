@@ -28,7 +28,6 @@ limitations under the License.
 #include "usb_comms.h"
 #include "usb_tonex_common.h"
 #include "control.h"
-#include "display.h"
 #include "tonex_params.h"
 
 static const char *TAG = "app_TonexCommon";

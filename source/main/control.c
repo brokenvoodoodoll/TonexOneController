@@ -39,7 +39,6 @@ limitations under the License.
 #include "usb/usb_host.h"
 #include "usb_tonex_one.h"
 #include "footswitches.h"
-#include "display.h"
 #include "task_priorities.h"
 #include "tonex_params.h"
 #include "valeton_params.h"

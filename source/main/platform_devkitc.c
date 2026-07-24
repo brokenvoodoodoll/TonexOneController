@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdio.h>
@@ -65,10 +65,9 @@ limitations under the License.
 #include "usb_tonex_common.h"
 #include "usb_tonex_one.h"
 #include "usb_tonex.h"
-#include "display.h"
 #include "CH422G.h"
 #include "control.h"
-#include "task_priorities.h" 
+#include "task_priorities.h"
 #include "midi_control.h"
 #include "LP5562.h"
 #include "tonex_params.h"
@@ -78,11 +77,11 @@ limitations under the License.
 static const char *TAG = "platform_devkitc";
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 __attribute__((unused)) void platform_adjust_touch_coords(lv_coord_t* x, lv_coord_t* y)
 {
@@ -90,11 +89,11 @@ __attribute__((unused)) void platform_adjust_touch_coords(lv_coord_t* x, lv_coor
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 __attribute__((unused)) void platform_adjust_display_flush_area(lv_area_t *area)
 {
@@ -102,11 +101,11 @@ __attribute__((unused)) void platform_adjust_display_flush_area(lv_area_t *area)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 __attribute__((unused)) void platform_get_icon_coords(int16_t* dest, uint8_t max_entries)
 {
@@ -114,11 +113,11 @@ __attribute__((unused)) void platform_get_icon_coords(int16_t* dest, uint8_t max
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 __attribute__((unused)) const lv_font_t* platform_get_toast_font(void)
 {
@@ -126,11 +125,11 @@ __attribute__((unused)) const lv_font_t* platform_get_toast_font(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 __attribute__((unused)) uint16_t platform_get_toast_padding(void)
 {
@@ -138,11 +137,11 @@ __attribute__((unused)) uint16_t platform_get_toast_padding(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 __attribute__((unused)) lv_dir_t platform_adjust_gesture(lv_dir_t gesture)
 {
@@ -151,16 +150,16 @@ __attribute__((unused)) lv_dir_t platform_adjust_gesture(lv_dir_t gesture)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void platform_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2CMutex, lv_disp_drv_t* pdisp_drv)
-{    
+{
     ESP_LOGI(TAG, "Platform DevkitC Init");
-    
+
     // nothing needed
 }
 

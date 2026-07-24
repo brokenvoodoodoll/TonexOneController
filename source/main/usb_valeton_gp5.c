@@ -29,7 +29,6 @@ limitations under the License.
 #include "usb_comms.h"
 #include "usb_valeton_gp5.h"
 #include "control.h"
-#include "display.h"
 #include "usb_tonex_common.h"
 #include "valeton_params.h"
 
@@ -921,7 +920,7 @@ static void usb_valeton_gp5_request_ui_update(void)
     if (uxQueueMessagesWaiting(input_queue) == 0)
     {
         // signal to refresh param UI
-        UI_RefreshParameterValues();
+        //// UI_RefreshParameterValues();
 
         // refresh the footswitch leds
         control_update_footswitch_leds();

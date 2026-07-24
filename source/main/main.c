@@ -57,7 +57,6 @@ limitations under the License.
 #include "usb_comms.h"
 #include "usb/usb_host.h"
 #include "usb_tonex_one.h"
-#include "display.h"
 #include "footswitches.h"
 #include "control.h"
 #include "midi_control.h"
@@ -272,8 +271,8 @@ void app_main(void)
     platform_init(ic2_bus_handle_1, I2CMutex_1, &disp_drv);
 
     // init display
-    ESP_LOGI(TAG, "Init Display");
-    display_init(ic2_bus_handle_1, I2CMutex_1, &disp_drv);
+    // ESP_LOGI(TAG, "Init Display");
+    // display_init(ic2_bus_handle_1, I2CMutex_1, &disp_drv);
 
     // init Footswitches
     ESP_LOGI(TAG, "Init footswitches");

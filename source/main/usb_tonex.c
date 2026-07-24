@@ -64,7 +64,6 @@ limitations under the License.
 #include "usb_tonex_common.h"
 #include "usb_tonex.h"
 #include "control.h"
-#include "display.h"
 #include "tonex_params.h"
 
 static const char *TAG = "app_Tonex";
@@ -647,7 +646,7 @@ static TonexStatus usb_tonex_parse_param_changed(uint8_t* unframed, uint16_t len
                 ESP_LOGI(TAG, "Param changed index: %d value: %f", (int)param_index, temp_val);
 
                 // signal to refresh param UI
-                UI_RefreshParameterValues();
+                // UI_RefreshParameterValues();
 
                 // update web UI
 
@@ -838,7 +837,7 @@ static TonexStatus usb_tonex_parse_global_config(uint8_t* unframed, uint16_t len
             }
 
             // signal to refresh param UI
-            UI_RefreshParameterValues();
+            // UI_RefreshParameterValues();
 
             // update web UI
 
@@ -1056,7 +1055,7 @@ static esp_err_t usb_tonex_process_single_message(uint8_t* data, uint16_t length
                         if (uxQueueMessagesWaiting(input_queue) == 0)
                         {
                             // signal to refresh param UI with Globals
-                            UI_RefreshParameterValues();
+                            // UI_RefreshParameterValues();
 
                             // update web UI
 
@@ -1127,7 +1126,7 @@ static esp_err_t usb_tonex_process_single_message(uint8_t* data, uint16_t length
                         if (uxQueueMessagesWaiting(input_queue) == 0)
                         {
                             // signal to refresh param UI
-                            UI_RefreshParameterValues();
+                            // UI_RefreshParameterValues();
 
                             // update web UI
 
