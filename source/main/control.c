@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 
@@ -40,7 +40,6 @@ limitations under the License.
 #include "usb_tonex_one.h"
 #include "footswitches.h"
 #include "display.h"
-#include "wifi_config.h"
 #include "task_priorities.h"
 #include "tonex_params.h"
 #include "valeton_params.h"
@@ -60,7 +59,7 @@ limitations under the License.
 #define NVS_USERDATA_PC_MAP_CONF            "pcmapconf"
 
 #define MAX_TEXT_LENGTH                     128
-#define MAX_BT_CUSTOM_NAME                  25    
+#define MAX_BT_CUSTOM_NAME                  25
 #define MAX_PRESET_USER_TEXT_LENGTH         32
 #define LEGACY_CONFIG_USER_COUNT            20
 
@@ -98,14 +97,14 @@ typedef struct
 } tControlMessage;
 
 // note: is obsolete
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     uint16_t SkinIndex;
     char PresetDescription[MAX_TEXT_LENGTH];
 } tUserDataLegacy;
 
 // note here: obsolete data, moved to other locations
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     tUserDataLegacy UserData[LEGACY_CONFIG_USER_COUNT];
 
@@ -153,7 +152,7 @@ typedef struct __attribute__ ((packed))
     uint8_t PresetOrder[MAX_SUPPORTED_PRESETS];
 } tLegacyConfigData;
 
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     uint8_t BTMode;
 
@@ -167,7 +166,7 @@ typedef struct __attribute__ ((packed))
     char BTPeripheralName[MAX_BT_PERIPHERAL_NAME];
 } tBluetoothConfig;
 
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     // serial Midi flags
     uint8_t MidiSerialEnable: 1;
@@ -177,7 +176,7 @@ typedef struct __attribute__ ((packed))
     uint8_t MidiChannel;
 } tSMidiConfig;
 
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     uint16_t GeneralDoublePressToggleBypass: 1;
     uint16_t GeneralScreenRotation: 2;
@@ -188,8 +187,8 @@ typedef struct __attribute__ ((packed))
     uint16_t GeneralSpare: 8;
 } tGeneralConfig;
 
-typedef struct __attribute__ ((packed)) 
-{    
+typedef struct __attribute__ ((packed))
+{
     uint8_t WiFiMode : 4;
     uint8_t WifiTxPower : 4;
 
@@ -198,8 +197,8 @@ typedef struct __attribute__ ((packed))
     char MDNSName[MAX_MDNS_NAME];
 } tWiFiConfig;
 
-typedef struct __attribute__ ((packed)) 
-{ 
+typedef struct __attribute__ ((packed))
+{
     uint8_t FootswitchMode;
 
     // external footswitches
@@ -211,25 +210,25 @@ typedef struct __attribute__ ((packed))
     tExternalFootswitchEffectConfig InternalFootswitchEffectConfig[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
 } tFootSwitchConfig;
 
-typedef struct __attribute__ ((packed)) 
-{ 
+typedef struct __attribute__ ((packed))
+{
     // preset order mapping
     uint8_t PresetOrder[MAX_SUPPORTED_PRESETS];
 } tPresetOrderMappingConfig;
 
-typedef struct __attribute__ ((packed)) 
-{ 
+typedef struct __attribute__ ((packed))
+{
     // program change mapping
     uint8_t PCMap[MAX_PC_MAP];
 } tPCMapConfig;
 
-typedef struct __attribute__ ((packed)) 
-{ 
+typedef struct __attribute__ ((packed))
+{
     // selected skin indexes
     uint8_t SkinIndex[MAX_SUPPORTED_PRESETS];
 } tSkinConfig;
 
-typedef struct 
+typedef struct
 {
     tBluetoothConfig BTConfig;
     tSMidiConfig MidiConfig;
@@ -247,7 +246,7 @@ typedef struct
     float BPM;
 } tTapTempo;
 
-typedef struct 
+typedef struct
 {
     uint32_t PresetIndex;                        // 0-based index
     uint8_t ABSlotBank;                          // 0-based AB slot bank (Slot A = bank*2, Slot B = bank*2+1)
@@ -276,11 +275,11 @@ static uint8_t MigrateUserData(void);
 static void UpdateFootswitchLeds(void);
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static uint8_t process_control_command(tControlMessage* message)
 {
@@ -304,7 +303,7 @@ static uint8_t process_control_command(tControlMessage* message)
                 else if (ControlData.PresetIndex > 0)
                 {
                     uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex - 1];
-                    
+
                     // send message to USB
                     usb_set_preset(preset);
                 }
@@ -319,14 +318,14 @@ static uint8_t process_control_command(tControlMessage* message)
                 {
                     uint8_t newIndex = (ControlData.PresetIndex < (usb_get_max_presets_for_connected_modeller() - 1)) ? (ControlData.PresetIndex + 1) : 0;
                     uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[newIndex];
-                    
+
                     // send message to USB
                     usb_set_preset(preset);
                 }
                 else if (ControlData.PresetIndex < (usb_get_max_presets_for_connected_modeller() - 1))
                 {
                     uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex + 1];
-                    
+
                     // send message to USB
                     usb_set_preset(preset);
                 }
@@ -391,14 +390,13 @@ static uint8_t process_control_command(tControlMessage* message)
                 usb_set_ab_slots(ControlData.ABSlotBank * 2, ControlData.ABSlotBank * 2 + 1);
             }
         } break;
-        
+
         case EVENT_SET_PRESET_NAME:
         {
             memcpy((void*)ControlData.PresetNames[message->Value], (void*)message->Text, MAX_PRESET_NAME_LENGTH);
             ControlData.PresetNames[message->Value][MAX_PRESET_NAME_LENGTH - 1] = 0;
 
             // update web UI
-            wifi_request_sync(WIFI_SYNC_TYPE_PRESET_NAME, (void*)ControlData.PresetNames[message->Value], (void*)&message->Value);
         } break;
 
         case EVENT_SET_PRESET_DETAILS:
@@ -411,7 +409,7 @@ static uint8_t process_control_command(tControlMessage* message)
                 memcpy((void*)ControlData.PresetNames[message->Value], (void*)message->Text, MAX_PRESET_NAME_LENGTH);
                 ControlData.PresetNames[message->Value][MAX_PRESET_NAME_LENGTH - 1] = 0;
             }
-          
+
 #if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
             // update UI
             UI_SetPresetLabel(PresetIndexForOrderValue(message->Value), ControlData.PresetNames[message->Value]);
@@ -419,14 +417,13 @@ static uint8_t process_control_command(tControlMessage* message)
             UI_SetAmpSkin(ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]);
 
             char preset_user_text[MAX_PRESET_USER_TEXT_LENGTH] = {0};
-            
+
             // load user text and set it
             LoadPresetUserText(message->Value, preset_user_text);
             UI_SetPresetDescription(preset_user_text);
 #endif
 
             // update web UI
-            wifi_request_sync(WIFI_SYNC_TYPE_PRESET, NULL, (void*)&ControlData.PresetIndex);
         } break;
 
         case EVENT_SET_USB_STATUS:
@@ -460,13 +457,13 @@ static uint8_t process_control_command(tControlMessage* message)
         } break;
 
         case EVENT_SET_AMP_SKIN:
-        {            
+        {
             ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex] = message->Value;
 
 #if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
             // update UI
             UI_SetAmpSkin(ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]);
-#endif                 
+#endif
         } break;
 
         case EVENT_SAVE_USER_DATA:
@@ -485,7 +482,7 @@ static uint8_t process_control_command(tControlMessage* message)
         case EVENT_SET_USER_TEXT:
         {
             char preset_user_text[MAX_PRESET_USER_TEXT_LENGTH] = {0};
-            
+
             if (strlen(message->Text) > 0)
             {
                 memcpy((void*)preset_user_text, (void*)message->Text, MAX_PRESET_USER_TEXT_LENGTH);
@@ -523,7 +520,7 @@ static uint8_t process_control_command(tControlMessage* message)
                     ESP_LOGI(TAG, "Config set custom BT enable %d", (int)message->Value);
                     ControlData.ConfigData.BTConfig.BTClientCustomEnable = (uint8_t)message->Value;
                 } break;
-                
+
                 case CONFIG_ITEM_MIDI_ENABLE:
                 {
                     ESP_LOGI(TAG, "Config set Midi enable %d", (int)message->Value);
@@ -583,7 +580,7 @@ static uint8_t process_control_command(tControlMessage* message)
                     ESP_LOGI(TAG, "Config set higher touch sense %d", (int)message->Value);
                     ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity = (uint8_t)message->Value & 0x01;
                 } break;
-                
+
                 case CONFIG_ITEM_DISABLE_BPM_FLASHER:
                 {
                     ESP_LOGI(TAG, "Config set bpm display touch sense %d", (int)message->Value);
@@ -935,7 +932,7 @@ static uint8_t process_control_command(tControlMessage* message)
 
         case EVENT_TRIGGER_TAP_TEMPO:
         {
-            uint32_t current_time = xTaskGetTickCount(); 
+            uint32_t current_time = xTaskGetTickCount();
             uint32_t delta = current_time - ControlData.TapTempo.LastTime;
             float bpm;
 
@@ -943,19 +940,19 @@ static uint8_t process_control_command(tControlMessage* message)
             //ESP_LOGI(TAG, "Tap Tempo %d %d", (int)current_time, (int)delta);
 
             // BPM can range from 40 to 240 bpm: 1.5 second2 maximum to 250 msec minimum between beats
-            
+
             // check time since last tap
             if (delta > 1500)
             {
                 // less than 40 bpm, save time and wait for another trigger
                 ControlData.TapTempo.LastTime = current_time;
             }
-            else 
+            else
             {
                 if (delta < 250)
                 {
                     // clamp at maximum bpm
-                    delta = 250;                       
+                    delta = 250;
                 }
 
                 // calculate bpm (60,000 is 60 seconds in msec)
@@ -996,33 +993,33 @@ static uint8_t process_control_command(tControlMessage* message)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_request_preset_down(void)
 {
     tControlMessage message;
 
-    ESP_LOGI(TAG, "control_request_preset_down");            
+    ESP_LOGI(TAG, "control_request_preset_down");
 
     message.Event = EVENT_PRESET_DOWN;
 
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_request_preset_down queue send failed!");            
+        ESP_LOGE(TAG, "control_request_preset_down queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_request_preset_up(void)
 {
@@ -1035,16 +1032,16 @@ void control_request_preset_up(void)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_request_preset_up queue send failed!");            
+        ESP_LOGE(TAG, "control_request_preset_up queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_request_preset_index(uint8_t index)
 {
@@ -1058,16 +1055,16 @@ void control_request_preset_index(uint8_t index)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_request_preset_index queue send failed!");            
+        ESP_LOGE(TAG, "control_request_preset_index queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_request_bank_index(uint8_t index)
 {
@@ -1081,7 +1078,7 @@ void control_request_bank_index(uint8_t index)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_request_bank_index queue send failed!");            
+        ESP_LOGE(TAG, "control_request_bank_index queue send failed!");
     }
 }
 
@@ -1131,17 +1128,17 @@ void control_request_ab_bank_up(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_sync_preset_name(uint16_t index, char* name)
 {
     tControlMessage message;
 
-    ESP_LOGI(TAG, "control_sync_preset_name: index: %d, name: %s", (int)index, name);            
+    ESP_LOGI(TAG, "control_sync_preset_name: index: %d, name: %s", (int)index, name);
 
     message.Event = EVENT_SET_PRESET_NAME;
     message.Value = index;
@@ -1153,16 +1150,16 @@ void control_sync_preset_name(uint16_t index, char* name)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_sync_preset_name queue send failed!");            
+        ESP_LOGE(TAG, "control_sync_preset_name queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_sync_preset_details(uint16_t index, char* name)
 {
@@ -1180,22 +1177,22 @@ void control_sync_preset_details(uint16_t index, char* name)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_sync_preset_details queue send failed!");            
+        ESP_LOGE(TAG, "control_sync_preset_details queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_user_text(char* text)
 {
     tControlMessage message;
 
-    ESP_LOGI(TAG, "control_set_user_text");            
+    ESP_LOGI(TAG, "control_set_user_text");
 
     message.Event = EVENT_SET_USER_TEXT;
 
@@ -1206,16 +1203,16 @@ void control_set_user_text(char* text)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_set_user_text queue send failed!");            
+        ESP_LOGE(TAG, "control_set_user_text queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_usb_status(uint32_t status)
 {
@@ -1229,16 +1226,16 @@ void control_set_usb_status(uint32_t status)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_set_usb_status queue send failed!");            
+        ESP_LOGE(TAG, "control_set_usb_status queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_bt_status(uint32_t status)
 {
@@ -1252,16 +1249,16 @@ void control_set_bt_status(uint32_t status)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_set_usb_status queue send failed!");            
+        ESP_LOGE(TAG, "control_set_usb_status queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_wifi_status(uint32_t status)
 {
@@ -1275,16 +1272,16 @@ void control_set_wifi_status(uint32_t status)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_set_wifi_status queue send failed!");            
+        ESP_LOGE(TAG, "control_set_wifi_status queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_save_user_data(uint8_t reboot)
 {
@@ -1298,16 +1295,16 @@ void control_save_user_data(uint8_t reboot)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_save_user_data queue send failed!");            
+        ESP_LOGE(TAG, "control_save_user_data queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_amp_skin_index(uint32_t status)
 {
@@ -1321,14 +1318,14 @@ void control_set_amp_skin_index(uint32_t status)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_set_amp_skin_index queue send failed!");            
+        ESP_LOGE(TAG, "control_set_amp_skin_index queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -1343,14 +1340,14 @@ void control_trigger_tap_tempo(void)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_trigger_tap_tempo queue send failed!");            
+        ESP_LOGE(TAG, "control_trigger_tap_tempo queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -1365,28 +1362,28 @@ void control_update_footswitch_leds(void)
     // send to queue
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
-        ESP_LOGE(TAG, "control_update_footswitch_leds queue send failed!");            
+        ESP_LOGE(TAG, "control_update_footswitch_leds queue send failed!");
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint32_t control_get_current_preset_index(void)
 {
     return ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex];
-}  
+}
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_get_current_preset_name(char* dest)
 {
@@ -1395,11 +1392,11 @@ void control_get_current_preset_name(char* dest)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_config_item_int(uint32_t item, uint32_t status)
 {
@@ -1420,18 +1417,18 @@ void control_set_config_item_int(uint32_t item, uint32_t status)
             return;
         }
 
-        ESP_LOGW(TAG, "control_set_config_item_int queue send retry");            
+        ESP_LOGW(TAG, "control_set_config_item_int queue send retry");
     }
 
-    ESP_LOGE(TAG, "control_set_config_item_int queue send failed!");            
+    ESP_LOGE(TAG, "control_set_config_item_int queue send failed!");
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_config_item_string(uint32_t item, char* name)
 {
@@ -1455,18 +1452,18 @@ void control_set_config_item_string(uint32_t item, char* name)
             return;
         }
 
-        ESP_LOGW(TAG, "control_set_config_item_string queue send retry");            
+        ESP_LOGW(TAG, "control_set_config_item_string queue send retry");
     }
 
-    ESP_LOGE(TAG, "control_set_config_item_string queue send failed!");  
+    ESP_LOGE(TAG, "control_set_config_item_string queue send failed!");
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint32_t control_get_config_item_int(uint32_t item)
 {
@@ -1493,7 +1490,7 @@ uint32_t control_get_config_item_int(uint32_t item)
         {
             value = ControlData.ConfigData.BTConfig.BTClientCustomEnable;
         } break;
-        
+
         case CONFIG_ITEM_MIDI_ENABLE:
         {
             value = ControlData.ConfigData.MidiConfig.MidiSerialEnable;
@@ -1548,12 +1545,12 @@ uint32_t control_get_config_item_int(uint32_t item)
         {
             value = ControlData.ConfigData.GeneralConfig.GeneralHideBPM;
         } break;
-        
+
         case CONFIG_ITEM_WIFI_TX_POWER:
         {
             value = ControlData.ConfigData.WiFiConfig.WifiTxPower;
         } break;
-        
+
         case CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT:
         {
             value = ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout;
@@ -1668,7 +1665,7 @@ uint32_t control_get_config_item_int(uint32_t item)
         {
             value = ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig[5].CC;
         } break;
-        
+
         case CONFIG_ITEM_EXT_FOOTSW_EFFECT6_VAL1:
         {
             value = ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig[5].Value_1;
@@ -1801,7 +1798,7 @@ uint32_t control_get_config_item_int(uint32_t item)
 
         default:
         {
-            ESP_LOGE(TAG, "Unknown/Invalid int parameter item %d", (int)item);            
+            ESP_LOGE(TAG, "Unknown/Invalid int parameter item %d", (int)item);
         } break;
     }
 
@@ -1809,11 +1806,11 @@ uint32_t control_get_config_item_int(uint32_t item)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_get_config_item_string(uint32_t item, char* name)
 {
@@ -1834,13 +1831,13 @@ void control_get_config_item_string(uint32_t item, char* name)
         case CONFIG_ITEM_WIFI_PASSWORD:
         {
             strncpy(name, ControlData.ConfigData.WiFiConfig.WifiPassword, MAX_WIFI_SSID_PW - 1);
-            name[MAX_WIFI_SSID_PW - 1] = 0;            
+            name[MAX_WIFI_SSID_PW - 1] = 0;
         } break;
 
         case CONFIG_ITEM_MDNS_NAME:
         {
             strncpy(name, ControlData.ConfigData.WiFiConfig.MDNSName, MAX_MDNS_NAME - 1);
-            name[MAX_MDNS_NAME - 1] = 0;            
+            name[MAX_MDNS_NAME - 1] = 0;
         } break;
 
         case CONFIG_ITEM_BT_PERIPHERAL_NAME:
@@ -1851,17 +1848,17 @@ void control_get_config_item_string(uint32_t item, char* name)
 
         default:
         {
-            ESP_LOGE(TAG, "Unknown/Invalid string parameter item %d", (int)item);            
+            ESP_LOGE(TAG, "Unknown/Invalid string parameter item %d", (int)item);
         } break;
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_preset_order(uint8_t* order)
 {
@@ -1877,11 +1874,11 @@ void control_set_preset_order(uint8_t* order)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t* control_get_preset_order(void)
 {
@@ -1889,11 +1886,11 @@ uint8_t* control_get_preset_order(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_pc_map(uint8_t* map)
 {
@@ -1904,11 +1901,11 @@ void control_set_pc_map(uint8_t* map)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t* control_get_pc_map(void)
 {
@@ -1916,11 +1913,11 @@ uint8_t* control_get_pc_map(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_skin_next(void)
 {
@@ -1932,28 +1929,28 @@ void control_set_skin_next(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_skin_previous(void)
 {
     if (ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex] > 0)
     {
         ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]--;
-    
+
         control_set_amp_skin_index(ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]);
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_sync_complete(void)
 {
@@ -1961,11 +1958,11 @@ void control_set_sync_complete(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t control_get_sync_complete(void)
 {
@@ -1974,9 +1971,9 @@ uint8_t control_get_sync_complete(void)
 
 #if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -1994,9 +1991,9 @@ static uint8_t PresetIndexForOrderValue(uint8_t value)
 #endif
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2012,13 +2009,13 @@ static esp_err_t LoadUserConfigItem(void* item, size_t item_length, char* key)
     // open storage
     err = nvs_open("storage", NVS_READWRITE, &my_handle);
 
-    if (err == ESP_OK) 
+    if (err == ESP_OK)
     {
         // read data
         required_size = item_length;
         err = nvs_get_blob(my_handle, key, (void*)item, &required_size);
 
-        switch (err) 
+        switch (err)
         {
             case ESP_OK:
             {
@@ -2029,7 +2026,7 @@ static esp_err_t LoadUserConfigItem(void* item, size_t item_length, char* key)
 
                 result = ESP_OK;
             } break;
-            
+
             case ESP_ERR_NVS_NOT_FOUND:
             {
                 ESP_LOGW(TAG, "LoadUserConfigItem not found");
@@ -2037,7 +2034,7 @@ static esp_err_t LoadUserConfigItem(void* item, size_t item_length, char* key)
                 // close
                 nvs_close(my_handle);
             } break;
-            
+
             default:
             {
                 ESP_LOGE(TAG, "LoadUserConfigItem Error (%s)", esp_err_to_name(err));
@@ -2056,9 +2053,9 @@ static esp_err_t LoadUserConfigItem(void* item, size_t item_length, char* key)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2074,13 +2071,13 @@ static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
     // open storage
     err = nvs_open("storage", NVS_READWRITE, &my_handle);
 
-    if (err == ESP_OK) 
+    if (err == ESP_OK)
     {
         // read data
         required_size = item_length;
         err = nvs_set_blob(my_handle, key, (void*)item, required_size);
 
-        switch (err) 
+        switch (err)
         {
             case ESP_OK:
             {
@@ -2093,7 +2090,7 @@ static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
 
                 result = ESP_OK;
             } break;
-            
+
             case ESP_ERR_NVS_NOT_FOUND:
             {
                 ESP_LOGE(TAG, "SaveUserConfigItem Not found: %s", key);
@@ -2101,7 +2098,7 @@ static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
                 // close
                 nvs_close(my_handle);
             } break;
-            
+
             default:
             {
                 ESP_LOGE(TAG, "SaveUserConfigItem Error (%s)", esp_err_to_name(err));
@@ -2120,9 +2117,9 @@ static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2139,7 +2136,7 @@ static uint8_t MigrateUserData(void)
     // open storage
     err = nvs_open("storage", NVS_READWRITE, &my_handle);
 
-    if (err == ESP_OK) 
+    if (err == ESP_OK)
     {
         // check if we have legacy config
         if (nvs_find_key(my_handle, NVS_USERDATA_NAME, &out_type) == ESP_OK)
@@ -2156,7 +2153,7 @@ static uint8_t MigrateUserData(void)
                 return 0;
             }
 
-            // read data            
+            // read data
             if (nvs_get_blob(my_handle, NVS_USERDATA_NAME, (void*)LegacyConfigData, &required_size) == ESP_OK)
             {
                 ESP_LOGI(TAG, "Legacy config migration");
@@ -2167,7 +2164,7 @@ static uint8_t MigrateUserData(void)
                 ControlData.ConfigData.BTConfig.BTClientXviveMD1Enable = LegacyConfigData->BTClientXviveMD1Enable;
                 ControlData.ConfigData.BTConfig.BTClientCustomEnable = LegacyConfigData->BTClientCustomEnable;
                 memcpy((void*)ControlData.ConfigData.BTConfig.BTClientCustomName, LegacyConfigData->BTClientCustomName, MAX_BT_CUSTOM_NAME);
-                
+
                 // midi
                 ControlData.ConfigData.MidiConfig.MidiSerialEnable = LegacyConfigData->MidiSerialEnable;
                 ControlData.ConfigData.MidiConfig.EnableBTmidiCC = LegacyConfigData->EnableBTmidiCC;
@@ -2180,7 +2177,7 @@ static uint8_t MigrateUserData(void)
                 ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot = LegacyConfigData->GeneralSavePresetToSlot;
                 ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity = 0;
                 ControlData.ConfigData.GeneralConfig.GeneralHideBPM = 0;
-                
+
                 // WiFi
                 ControlData.ConfigData.WiFiConfig.WiFiMode = LegacyConfigData->WiFiMode;
                 ControlData.ConfigData.WiFiConfig.WifiTxPower = LegacyConfigData->WifiTxPower;
@@ -2215,7 +2212,7 @@ static uint8_t MigrateUserData(void)
             // delete the old data key
             nvs_erase_key(my_handle, NVS_USERDATA_NAME);
             nvs_commit(my_handle);
-            nvs_close(my_handle);      
+            nvs_close(my_handle);
 
             // delete temp memory
             heap_caps_free(LegacyConfigData);
@@ -2225,22 +2222,22 @@ static uint8_t MigrateUserData(void)
 
             // now save new config
             SaveUserData();
-        }     
+        }
         else
         {
             ESP_LOGI(TAG, "No legacy config found, skipping migration");
             nvs_close(my_handle);
             return 0;
         }
-    } 
+    }
 
     return 1;
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2262,9 +2259,9 @@ static uint8_t SaveUserData(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2314,8 +2311,8 @@ static uint8_t LoadUserData(void)
     if (LoadUserConfigItem((void*)&ControlData.ConfigData.SkinConfig, sizeof(ControlData.ConfigData.SkinConfig), NVS_USERDATA_SKIN_CONF) != ESP_OK)
     {
         SaveUserConfigItem((void*)&ControlData.ConfigData.SkinConfig, sizeof(ControlData.ConfigData.SkinConfig), NVS_USERDATA_SKIN_CONF);
-    }   
-        
+    }
+
     // PC mapping
     if (LoadUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF) != ESP_OK)
     {
@@ -2349,7 +2346,7 @@ static uint8_t LoadUserData(void)
 
     if (ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout != FOOTSWITCH_LAYOUT_DISABLED)
     {
-        if (ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout >= FOOTSWITCH_LAYOUT_LAST) 
+        if (ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout >= FOOTSWITCH_LAYOUT_LAST)
         {
             ESP_LOGW(TAG, "Config External Footswitch preset layout invalid");
             ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout = FOOTSWITCH_LAYOUT_1X4;
@@ -2359,14 +2356,14 @@ static uint8_t LoadUserData(void)
 
     if (ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout != FOOTSWITCH_LAYOUT_DISABLED)
     {
-        if (ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout >= FOOTSWITCH_LAYOUT_LAST) 
+        if (ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout >= FOOTSWITCH_LAYOUT_LAST)
         {
             ESP_LOGW(TAG, "Config Internal Footswitch preset layout invalid");
             ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout = FOOTSWITCH_LAYOUT_1X4;
             SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
         }
     }
-    
+
     // check the preset order
     for (loop = 0; loop < MAX_SUPPORTED_PRESETS; loop++)
     {
@@ -2398,9 +2395,9 @@ static uint8_t LoadUserData(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2428,7 +2425,7 @@ static void DumpUserConfig(void)
     ESP_LOGI(TAG, "Config Ext Footsw Prst Layout: %d", (int)ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout);
     ESP_LOGI(TAG, "Config Higher Touch Sense: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity);
     ESP_LOGI(TAG, "Config Hide BPM flasher: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralHideBPM);
-    
+
     for (uint8_t loop = 0; loop < MAX_EXTERNAL_EFFECT_FOOTSWITCHES; loop++)
     {
         ESP_LOGI(TAG, "Config Ext Footsw Effect %d Switch: %d", (int)loop, (int)ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig[loop].Switch);
@@ -2436,7 +2433,7 @@ static void DumpUserConfig(void)
         ESP_LOGI(TAG, "Config Ext Footsw Effect %d Val 1: %d", (int)loop, (int)ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig[loop].Value_1);
         ESP_LOGI(TAG, "Config Ext Footsw Effect %d Val 2: %d", (int)loop, (int)ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig[loop].Value_2);
     }
-    
+
     for (uint8_t loop = 0; loop < MAX_INTERNAL_EFFECT_FOOTSWITCHES; loop++)
     {
         ESP_LOGI(TAG, "Config Int Footsw Effect %d Switch: %d", (int)loop, (int)ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[loop].Switch);
@@ -2447,9 +2444,9 @@ static void DumpUserConfig(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2459,7 +2456,7 @@ static uint8_t SavePresetUserText(uint16_t preset_index, char* text)
     nvs_handle_t my_handle;
     uint8_t result = 0;
     char key[10];
-    
+
     // build key from preset index
     sprintf(key, "ut%d", (int)preset_index);
 
@@ -2471,12 +2468,12 @@ static uint8_t SavePresetUserText(uint16_t preset_index, char* text)
     // open storage
     err = nvs_open("storage", NVS_READWRITE, &my_handle);
 
-    if (err == ESP_OK) 
+    if (err == ESP_OK)
     {
-        // write 
+        // write
         err = nvs_set_str(my_handle, key, text);
 
-        switch (err) 
+        switch (err)
         {
             case ESP_OK:
             {
@@ -2484,7 +2481,7 @@ static uint8_t SavePresetUserText(uint16_t preset_index, char* text)
 
                 ESP_LOGI(TAG, "Wrote SavePresetUserText OK");
             } break;
-            
+
             default:
             {
                 ESP_LOGE(TAG, "Error (%s) writing SavePresetUserText\n", esp_err_to_name(err));
@@ -2506,9 +2503,9 @@ static uint8_t SavePresetUserText(uint16_t preset_index, char* text)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
@@ -2519,7 +2516,7 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
     uint8_t result = 0;
     char key[10];
     size_t required_size;
-    
+
     // build key from preset index
     sprintf(key, "ut%d", (int)preset_index);
 
@@ -2531,7 +2528,7 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
     // open storage
     err = nvs_open("storage", NVS_READWRITE, &my_handle);
 
-    if (err == ESP_OK) 
+    if (err == ESP_OK)
     {
         // read
         required_size = MAX_PRESET_USER_TEXT_LENGTH;
@@ -2540,7 +2537,7 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
         // clamp text at max length and ensure its null terminated
         text[MAX_PRESET_USER_TEXT_LENGTH - 1] = 0;
 
-        switch (err) 
+        switch (err)
         {
             case ESP_OK:
             {
@@ -2548,7 +2545,7 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
 
                 ESP_LOGI(TAG, "Read LoadPresetUserText OK");
             } break;
-            
+
             case ESP_ERR_NVS_NOT_FOUND:
             {
                 ESP_LOGI(TAG, "Read LoadPresetUserText not set");
@@ -2571,17 +2568,17 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
     return result;
 }
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void UpdateFootswitchLeds(void)
 {
     //todo
 #if CONFIG_TONEX_CONTROLLER_GPIO_FOOTSWITCHES
-#if !CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED    
+#if !CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
     tModellerParameter* param_ptr;
     uint32_t preset_color;
     tLedColour colour;
@@ -2597,7 +2594,7 @@ static void UpdateFootswitchLeds(void)
             preset_switch_num = 0;
         } break;
 
-        case FOOTSWITCH_LAYOUT_1X3: 
+        case FOOTSWITCH_LAYOUT_1X3:
         {
             preset_switch_num = 3;
         } break;
@@ -2619,7 +2616,7 @@ static void UpdateFootswitchLeds(void)
     leds_set_colour(0xFFFF, &colour_black);
 
     if (preset_switch_num > 0)
-    {  
+    {
         // default to using green for preset led
         colour.Red = 0;
         colour.Green = 255;
@@ -2644,10 +2641,10 @@ static void UpdateFootswitchLeds(void)
                 // will use green
             } break;
         }
-      
+
         // switch on led above preset switch
         uint8_t led_index = (ControlData.PresetIndex - usb_get_first_preset_index_for_connected_modeller()) % preset_switch_num;
-        
+
         leds_set_colour(1 << led_index, &colour);
         ESP_LOGI(TAG, "Preset Led %d", (ControlData.PresetIndex % preset_switch_num));
     }
@@ -2675,7 +2672,7 @@ static void UpdateFootswitchLeds(void)
                         if (param_ptr[param].Type == MODELLER_PARAM_TYPE_SWITCH)
                         {
                             if (param_ptr[param].Value != 0)
-                            {                                
+                            {
                                 // set default colour
                                 colour.Red = 0;
                                 colour.Green = 255;
@@ -2703,7 +2700,7 @@ static void UpdateFootswitchLeds(void)
                                                 colour.Green = 0;
                                                 colour.Blue = 255;
                                             } break;
-                                         
+
                                             case TONEX_PARAM_MODEL_AMP_ENABLE:
                                             {
                                                 colour.Red = 255;
@@ -2732,7 +2729,7 @@ static void UpdateFootswitchLeds(void)
                                                 colour.Green = 0;
                                                 colour.Blue = 255;
                                             } break;
-                                        }                                    
+                                        }
                                     } break;
 
                                     case AMP_MODELLER_VALETON_GP5:
@@ -2766,7 +2763,7 @@ static void UpdateFootswitchLeds(void)
                                                 colour.Green = 255;
                                                 colour.Blue = 0;
                                             } break;
-                                            
+
                                             case VALETON_PARAM_CAB_ENABLE:
                                             {
                                                 colour.Red = 0;
@@ -2812,29 +2809,29 @@ static void UpdateFootswitchLeds(void)
                                         }
                                     } break;
                                 }
-                            
+
                                 leds_set_colour(1 << fx_config->Switch, &colour);
                                 ESP_LOGI(TAG, "Effect Led %d", fx_config->Switch);
                             }
                         }
 
                         control_release_connected_modeller_params_locked_access();
-                    }                    
+                    }
                 }
             }
         }
     }
 
-#endif   //!CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED  
+#endif   //!CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
 #endif   //CONFIG_TONEX_CONTROLLER_GPIO_FOOTSWITCHES
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_set_default_config(void)
 {
@@ -2849,25 +2846,25 @@ void control_set_default_config(void)
 #if CONFIG_TONEX_CONTROLLER_DEFAULT_MIDI_ENABLE
     ControlData.ConfigData.MidiConfig.MidiSerialEnable = 1;
 #else
-    ControlData.ConfigData.MidiConfig.MidiSerialEnable = 0;    
-#endif    
+    ControlData.ConfigData.MidiConfig.MidiSerialEnable = 0;
+#endif
 
     ControlData.ConfigData.MidiConfig.MidiChannel = 1;
     ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_1X2;
     ControlData.ConfigData.MidiConfig.EnableBTmidiCC = 0;
     memset((void*)ControlData.ConfigData.BTConfig.BTClientCustomName, 0, sizeof(ControlData.ConfigData.BTConfig.BTClientCustomName));
-    strcpy(ControlData.ConfigData.BTConfig.BTPeripheralName, "TnxBT");   
+    strcpy(ControlData.ConfigData.BTConfig.BTPeripheralName, "TnxBT");
     ControlData.ConfigData.WiFiConfig.WiFiMode = WIFI_MODE_ACCESS_POINT_TIMED;
     strcpy(ControlData.ConfigData.WiFiConfig.WifiSSID, "TonexConfig");
-    strcpy(ControlData.ConfigData.WiFiConfig.WifiPassword, "12345678");   
-    strcpy(ControlData.ConfigData.WiFiConfig.MDNSName, "tonex");   
+    strcpy(ControlData.ConfigData.WiFiConfig.WifiPassword, "12345678");
+    strcpy(ControlData.ConfigData.WiFiConfig.MDNSName, "tonex");
     ControlData.ConfigData.WiFiConfig.WifiTxPower = WIFI_TX_POWER_25;
 
-#if CONFIG_TONEX_CONTROLLER_SCREEN_ROTATION_DEFAULT_180    
+#if CONFIG_TONEX_CONTROLLER_SCREEN_ROTATION_DEFAULT_180
     ControlData.ConfigData.GeneralConfig.GeneralScreenRotation = SCREEN_ROTATION_180;
 #else
     ControlData.ConfigData.GeneralConfig.GeneralScreenRotation = SCREEN_ROTATION_0;
-#endif    
+#endif
 
     ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot = SAVE_PRESET_SLOT_C;
     ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity = 0;
@@ -2893,7 +2890,7 @@ void control_set_default_config(void)
     {
         ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[loop] = loop;
     }
-    
+
     for (uint8_t loop = 0; loop < MAX_PC_MAP; loop++)
     {
         // issue here, really need to use (loop + usb_get_first_preset_index_for_connected_modeller()) but modeller may not yet be connected
@@ -2902,11 +2899,11 @@ void control_set_default_config(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t control_get_connected_modeller_params_locked_access(tModellerParameter** param_ptr)
 {
@@ -2927,11 +2924,11 @@ esp_err_t control_get_connected_modeller_params_locked_access(tModellerParameter
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t control_release_connected_modeller_params_locked_access(void)
 {
@@ -2952,11 +2949,11 @@ esp_err_t control_release_connected_modeller_params_locked_access(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_task(void *arg)
 {
@@ -2964,7 +2961,7 @@ void control_task(void *arg)
 
     ESP_LOGI(TAG, "Control task start");
 
-    while (1) 
+    while (1)
     {
         // check for any input messages
         if (xQueueReceive(control_input_queue, (void*)&message, pdMS_TO_TICKS(20)) == pdPASS)
@@ -2979,24 +2976,24 @@ void control_task(void *arg)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_load_config(void)
 {
     esp_err_t ret;
 
     memset((void*)&ControlData, 0, sizeof(ControlData));
- 
+
     // default config, will be overwritten or used as default
     control_set_default_config();
-   
+
     // Initialize NVS
     ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) 
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
     {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
@@ -3014,11 +3011,11 @@ void control_load_config(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void control_init(void)
 {

@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdlib.h>
@@ -29,7 +29,6 @@ limitations under the License.
 #include "usb_tonex_common.h"
 #include "control.h"
 #include "display.h"
-#include "wifi_config.h"
 #include "tonex_params.h"
 
 static const char *TAG = "app_TonexCommon";
@@ -37,55 +36,55 @@ static const char *TAG = "app_TonexCommon";
 static uint8_t* PreallocatedMemory;
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
-uint16_t tonex_common_calculate_CRC(uint8_t* data, uint16_t length) 
+uint16_t tonex_common_calculate_CRC(uint8_t* data, uint16_t length)
 {
     uint16_t crc = 0xFFFF;
 
-    for (uint16_t loop = 0; loop < length; loop++) 
+    for (uint16_t loop = 0; loop < length; loop++)
     {
         crc ^= data[loop];
 
-        for (uint8_t i = 0; i < 8; ++i) 
+        for (uint8_t i = 0; i < 8; ++i)
         {
-            if (crc & 1) 
+            if (crc & 1)
             {
                 crc = (crc >> 1) ^ 0x8408;  // 0x8408 is the reversed polynomial x^16 + x^12 + x^5 + 1
-            } 
-            else 
+            }
+            else
             {
                 crc = crc >> 1;
             }
         }
     }
-    
+
     return ~crc;
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
-uint16_t tonex_common_add_byte_with_stuffing(uint8_t* output, uint8_t byte) 
+uint16_t tonex_common_add_byte_with_stuffing(uint8_t* output, uint8_t byte)
 {
     uint16_t length = 0;
 
-    if (byte == 0x7E || byte == 0x7D) 
+    if (byte == 0x7E || byte == 0x7D)
     {
         output[length] = 0x7D;
         length++;
         output[length] = byte ^ 0x20;
         length++;
     }
-    else 
+    else
     {
         output[length] = byte;
         length++;
@@ -95,11 +94,11 @@ uint16_t tonex_common_add_byte_with_stuffing(uint8_t* output, uint8_t byte)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint16_t tonex_common_add_framing(uint8_t* input, uint16_t inlength, uint8_t* output)
 {
@@ -110,7 +109,7 @@ uint16_t tonex_common_add_framing(uint8_t* input, uint16_t inlength, uint8_t* ou
     outlength++;
 
     // add input bytes
-    for (uint16_t byte = 0; byte < inlength; byte++) 
+    for (uint16_t byte = 0; byte < inlength; byte++)
     {
         outlength += tonex_common_add_byte_with_stuffing(&output[outlength], input[byte]);
     }
@@ -128,11 +127,11 @@ uint16_t tonex_common_add_framing(uint8_t* input, uint16_t inlength, uint8_t* ou
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8_t* output, uint16_t* outlength)
 {
@@ -145,9 +144,9 @@ TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8
         return STATUS_INVALID_FRAME;
     }
 
-    for (uint16_t i = 1; i < inlength - 1; ++i) 
+    for (uint16_t i = 1; i < inlength - 1; ++i)
     {
-        if (input[i] == 0x7D) 
+        if (input[i] == 0x7D)
         {
             if ((i + 1) >= (inlength - 1))
             {
@@ -159,12 +158,12 @@ TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8
             output_ptr++;
             (*outlength)++;
             ++i;
-        } 
-        else if (input[i] == 0x7E) 
+        }
+        else if (input[i] == 0x7E)
         {
             break;
-        } 
-        else 
+        }
+        else
         {
             *output_ptr = input[i];
             output_ptr++;
@@ -172,7 +171,7 @@ TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8
         }
     }
 
-    if (*outlength < 2) 
+    if (*outlength < 2)
     {
         ESP_LOGE(TAG, "Invalid Frame (2)");
         return STATUS_INVALID_FRAME;
@@ -188,7 +187,7 @@ TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8
 
     uint16_t calculated_crc = tonex_common_calculate_CRC(output, *outlength);
 
-    if (received_crc != calculated_crc) 
+    if (received_crc != calculated_crc)
     {
         ESP_LOGE(TAG, "Crc mismatch: %X, %X", (int)received_crc, (int)calculated_crc);
         return STATUS_CRC_MISMATCH;
@@ -198,11 +197,11 @@ TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t tonex_common_transmit(cdc_acm_dev_hdl_t cdc_dev, uint8_t* tx_data, uint16_t tx_len, uint32_t usb_buffer_size)
 {
@@ -211,7 +210,7 @@ esp_err_t tonex_common_transmit(cdc_acm_dev_hdl_t cdc_dev, uint8_t* tx_data, uin
     uint8_t* tx_ptr = tx_data;
 
     ESP_LOGI(TAG, "Sending %d bytes over CDC", (int)tx_len);
-    
+
     // debug
     //ESP_LOG_BUFFER_HEX(TAG, tx_data, tx_len);
 
@@ -226,10 +225,10 @@ esp_err_t tonex_common_transmit(cdc_acm_dev_hdl_t cdc_dev, uint8_t* tx_data, uin
         }
 
         ret = cdc_acm_host_data_tx_blocking(cdc_dev, tx_ptr, bytes_this_chunk, 500);
-        
+
         if (ret != ESP_OK)
         {
-            ESP_LOGE(TAG, "cdc_acm_host_data_tx_blocking() failed: %s", esp_err_to_name(ret));   
+            ESP_LOGE(TAG, "cdc_acm_host_data_tx_blocking() failed: %s", esp_err_to_name(ret));
             break;
         }
 
@@ -242,16 +241,16 @@ esp_err_t tonex_common_transmit(cdc_acm_dev_hdl_t cdc_dev, uint8_t* tx_data, uin
 
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint16_t tonex_common_parse_value(uint8_t* message, uint8_t* index)
 {
     uint16_t value = 0;
-    
+
     if (message[*index] == 0x81 || message[*index] == 0x82)
     {
         value = (message[(*index) + 2] << 8) | message[(*index) + 1];
@@ -267,16 +266,16 @@ uint16_t tonex_common_parse_value(uint8_t* message, uint8_t* index)
         value = message[*index];
         (*index)++;
     }
-    
+
     return value;
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint16_t tonex_common_locate_message_end(uint8_t* data, uint16_t length)
 {
@@ -295,26 +294,26 @@ uint16_t tonex_common_locate_message_end(uint8_t* data, uint16_t length)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t tonex_common_modify_parameter(uint16_t index, float value)
 {
     tModellerParameter* param_ptr = NULL;
     esp_err_t res = ESP_FAIL;
-     
+
     if (index >= TONEX_PARAM_LAST)
     {
-        ESP_LOGE(TAG, "usb_tonex_modify_parameters invalid index %d", (int)index);   
+        ESP_LOGE(TAG, "usb_tonex_modify_parameters invalid index %d", (int)index);
         return ESP_FAIL;
     }
-        
+
     if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
     {
-        ESP_LOGI(TAG, "tonex_common_modify_parameter index: %d name: %s value: %02f", (int)index, param_ptr[index].Name, value);  
+        ESP_LOGI(TAG, "tonex_common_modify_parameter index: %d name: %s value: %02f", (int)index, param_ptr[index].Name, value);
 
         // update the local copy
         memcpy((void*)&param_ptr[index].Value, (void*)&value, sizeof(float));
@@ -327,11 +326,11 @@ esp_err_t tonex_common_modify_parameter(uint16_t index, float value)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void tonex_common_preallocate_memory(void)
 {
@@ -345,7 +344,7 @@ void tonex_common_preallocate_memory(void)
     if (PreallocatedMemory == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate PreallocatedMemory!");
-    } 
+    }
     else
     {
         ESP_LOGI(TAG, "PreallocatedMemory OK");
@@ -353,11 +352,11 @@ void tonex_common_preallocate_memory(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void tonex_common_release_memory(void)
 {

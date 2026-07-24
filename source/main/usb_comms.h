@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 
@@ -29,7 +29,6 @@ extern "C" {
 
 #define VALETON_USB_VENDOR              0x84EF
 #define VALETON_GP5_PRODUCT_ID          0x0184
-
 
 // Amp Modeller types
 enum AmpModellers
@@ -50,7 +49,7 @@ enum USB_Commands
     USB_COMMAND_SET_AB_SLOTS
 };
 
-typedef struct 
+typedef struct
 {
     usb_host_client_handle_t client_hdl;
     uint8_t dev_addr;
@@ -58,7 +57,7 @@ typedef struct
     uint32_t actions;
 } class_driver_t;
 
-typedef struct 
+typedef struct
 {
     uint8_t Command;
     uint32_t Payload;

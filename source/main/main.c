@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdio.h>
@@ -64,7 +64,6 @@ limitations under the License.
 #include "CH422G.h"
 #include "LP5562.h"
 #include "midi_serial.h"
-#include "wifi_config.h"
 #include "leds.h"
 #include "tonex_params.h"
 #include "valeton_params.h"
@@ -81,18 +80,18 @@ static const char *TAG = "app_main";
 
 __attribute__((unused)) SemaphoreHandle_t I2CMutex_1;
 __attribute__((unused)) SemaphoreHandle_t I2CMutex_2;
-static __attribute__((unused)) lv_disp_drv_t disp_drv;  
+static __attribute__((unused)) lv_disp_drv_t disp_drv;
 static __attribute__((unused)) i2c_master_bus_handle_t ic2_bus_handle_1;
 static __attribute__((unused)) i2c_master_bus_handle_t ic2_bus_handle_2;
 
 static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t port, uint32_t scl_pin, uint32_t sda_pin);
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t i2c_master_reset(void)
 {
@@ -128,14 +127,14 @@ esp_err_t i2c_master_reset(void)
         ESP_LOGI(TAG, "I2C bus clearing stuck SDA");
     }
 
-    while (!gpio_get_level(sda_io) && (i++ < I2C_CLR_BUS_SCL_NUM)) 
+    while (!gpio_get_level(sda_io) && (i++ < I2C_CLR_BUS_SCL_NUM))
     {
         gpio_set_level(scl_io, 1);
         esp_rom_delay_us(scl_half_period);
         gpio_set_level(scl_io, 0);
         esp_rom_delay_us(scl_half_period);
     }
-    
+
     gpio_set_level(sda_io, 0); // setup for STOP
     gpio_set_level(scl_io, 1);
     esp_rom_delay_us(scl_half_period);
@@ -146,11 +145,11 @@ esp_err_t i2c_master_reset(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t port, uint32_t scl_pin, uint32_t sda_pin)
 {
@@ -171,16 +170,16 @@ static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t p
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
-static __attribute__((unused)) void list_files(const char *path) 
+static __attribute__((unused)) void list_files(const char *path)
 {
     DIR *dir = opendir(path);
-    if (dir == NULL) 
+    if (dir == NULL)
     {
         ESP_LOGE(TAG, "Failed to open directory: %s", path);
         return;
@@ -188,32 +187,32 @@ static __attribute__((unused)) void list_files(const char *path)
 
     struct dirent *entry;
     ESP_LOGI(TAG, "Listing files in directory: %s", path);
-    
-    while ((entry = readdir(dir)) != NULL) 
+
+    while ((entry = readdir(dir)) != NULL)
     {
         // Skip "." and ".." entries
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) 
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
         {
             continue;
         }
-        
+
         char full_path[300];
         snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
-        
+
         // Get file information
         struct stat stat_buf;
-        if (stat(full_path, &stat_buf) == 0) 
+        if (stat(full_path, &stat_buf) == 0)
         {
-            if (S_ISDIR(stat_buf.st_mode)) 
+            if (S_ISDIR(stat_buf.st_mode))
             {
                 ESP_LOGI(TAG, "[DIR]  %s", entry->d_name);
-            } 
-            else 
+            }
+            else
             {
                 ESP_LOGI(TAG, "[FILE] %s (%ld bytes)", entry->d_name, stat_buf.st_size);
             }
-        } 
-        else 
+        }
+        else
         {
             ESP_LOGE(TAG, "Failed to stat %s", entry->d_name);
         }
@@ -223,11 +222,11 @@ static __attribute__((unused)) void list_files(const char *path)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void app_main(void)
 {
@@ -242,7 +241,7 @@ void app_main(void)
     {
         ESP_LOGE(TAG, "I2C Mutex 1 create failed!");
     }
-    
+
     I2CMutex_2 = xSemaphoreCreateMutex();
     if (I2CMutex_2 == NULL)
     {
@@ -256,7 +255,7 @@ void app_main(void)
     if (I2C_MASTER_2_SCL_IO != -1)
     {
         ESP_ERROR_CHECK(i2c_master_init(&ic2_bus_handle_2, I2C_MASTER_NUM_2, I2C_MASTER_2_SCL_IO, I2C_MASTER_2_SDA_IO));
-        ESP_LOGI(TAG, "I2C 2 initialized successfully");    
+        ESP_LOGI(TAG, "I2C 2 initialized successfully");
     }
 
     // init parameters
@@ -305,14 +304,11 @@ void app_main(void)
         midi_serial_init();
     }
     else
-    {    
+    {
         ESP_LOGI(TAG, "Serial MIDI disabled");
     }
 
     // init USB
     ESP_LOGI(TAG, "Init USB");
     init_usb_comms();
-
-    // init WiFi config
-    wifi_config_init();
 }

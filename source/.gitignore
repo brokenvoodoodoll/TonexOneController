@@ -34,3 +34,4 @@ dependencies.lock
 .component_hash
 sdkconfig
 sdkconfig.old
+.cache/
