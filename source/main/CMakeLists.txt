@@ -4,7 +4,6 @@ idf_component_register(SRCS
                        "CH422G.c"
                        "main.c"
                        "tonex_params.c"
-                       "SX1509.c"
                        "usb_comms.c"
                        "usb_tonex_one.c"
                        "usb_tonex_common.c"

@@ -41,7 +41,6 @@ limitations under the License.
 #include "usb_comms.h"
 #include "usb_tonex_one.h"
 #include "leds.h"
-#include "SX1509.h"
 #include "midi_helper.h"
 #include "tonex_params.h"
 
@@ -60,8 +59,6 @@ enum FootswitchHandlers
 {
     FOOTSWITCH_HANDLER_ONBOARD_PRESETS,
     FOOTSWITCH_HANDLER_ONBOARD_EFFECTS,
-    FOOTSWITCH_HANDLER_EXTERNAL_PRESETS,
-    FOOTSWITCH_HANDLER_EXTERNAL_EFFECTS,
     FOOTSWITCH_HANDLER_MAX
 };
 
@@ -147,7 +144,6 @@ static uint8_t get_banks_count(tFootswitchLayoutEntry* layout)
 *****************************************************************************/
 static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_state)
 {
-    esp_err_t result = ESP_FAIL;
     int8_t button_index;
 
     // map abstract switch index to physical IO
@@ -196,7 +192,6 @@ static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_
 *****************************************************************************/
 static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
 {
-    esp_err_t result = ESP_FAIL;
     *switch_state = 0;
 
     // direct gpio
@@ -221,78 +216,6 @@ static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
     }
 
     return ESP_OK;
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
-static esp_err_t footswitch_read_single_offboard(uint8_t pin, uint8_t* switch_state)
-{
-    esp_err_t result = ESP_FAIL;
-    uint8_t level;
-
-    if (FootswitchControl.io_expander_ok)
-    {
-        if (SX1509_digitalRead(pin, &level) == ESP_OK)
-        {
-            // debug
-            //ESP_LOGI(TAG, "Footswitch read %d", (int)level_mask);
-
-            result = ESP_OK;
-            *switch_state = (level == 0);
-        }
-    }
-
-    return result;
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
-static esp_err_t footswitch_read_multiple_offboard(uint16_t* switch_states)
-{
-    esp_err_t result = ESP_FAIL;
-
-    if (FootswitchControl.io_expander_ok)
-    {
-        if (SX1509_getPinValues(switch_states) == ESP_OK)
-        {
-            // flip so 1 = switch pressed
-            *switch_states = ~(*switch_states);
-
-#if 0
-            // debug code to dump footswitch states to log
-            char debug_text_1[50] = {0};
-            char debug_text_2[4] = {0};
-            for (uint8_t loop = 0; loop < 16; loop++)
-            {
-                if (((*switch_states) & (1 << (15 - loop))) != 0)
-                {
-                    sprintf(debug_text_2, "1 ");
-                }
-                else
-                {
-                    sprintf(debug_text_2, "0 ");
-                }
-                strcat(debug_text_1, debug_text_2);
-            }
-            ESP_LOGI(TAG, "Footswitches read: %s", debug_text_1);
-            vTaskDelay(500);
-#endif
-
-            result = ESP_OK;
-        }
-    }
-
-    return result;
 }
 
 /****************************************************************************
@@ -777,14 +700,6 @@ void footswitch_task(void *arg)
     FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS].footswitch_single_reader = &footswitch_read_single_onboard;
     FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS].footswitch_multiple_reader = &footswitch_read_multiple_onboard;
 
-    // setup handler for external IO Expander footswitches
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_PRESETS].footswitch_single_reader = &footswitch_read_single_offboard;
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_PRESETS].footswitch_multiple_reader = &footswitch_read_multiple_offboard;
-
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_EFFECTS].footswitch_single_reader = &footswitch_read_single_offboard;
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_EFFECTS].footswitch_multiple_reader = &footswitch_read_multiple_offboard;
-
-
     while (1)
     {
         // handle onboard IO foot switches (direct GPIO and IO expander on main PCB)
@@ -818,53 +733,6 @@ void footswitch_task(void *arg)
 
         // handle effects switching
         footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS], FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
-
-        // did we find an IO expander on boot?
-        if (FootswitchControl.io_expander_ok)
-        {
-            switch (FootswitchControl.external_switch_mode)
-            {
-                case FOOTSWITCH_LAYOUT_1X2:
-                {
-                    // run dual mode next/previous
-                    footswitch_handle_dual_mode(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_PRESETS]);
-                } break;
-
-                case FOOTSWITCH_LAYOUT_1X4_BINARY:
-                {
-                    // run 4 switch binary mode
-                    footswitch_handle_quad_binary(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_PRESETS]);
-                } break;
-
-                case FOOTSWITCH_LAYOUT_1X3:   // fallthrough
-                case FOOTSWITCH_LAYOUT_1X4:   // fallthrough
-                case FOOTSWITCH_LAYOUT_1X5A:  // fallthrough
-                case FOOTSWITCH_LAYOUT_1X5B:  // fallthrough
-                case FOOTSWITCH_LAYOUT_1X6A:  // fallthrough
-                case FOOTSWITCH_LAYOUT_1X6B:  // fallthrough
-                case FOOTSWITCH_LAYOUT_1X7A:  // fallthrough
-                case FOOTSWITCH_LAYOUT_1X7B:  // fallthrough
-                case FOOTSWITCH_LAYOUT_2X3:   // fallthrough
-                case FOOTSWITCH_LAYOUT_2X4:   // fallthrough
-                case FOOTSWITCH_LAYOUT_2X5A:  // fallthrough
-                case FOOTSWITCH_LAYOUT_2X5B:  // fallthrough
-                case FOOTSWITCH_LAYOUT_2X6A:  // fallthrough
-                case FOOTSWITCH_LAYOUT_2X6B:
-                {
-                    // handle external footswitches as banked
-                    footswitch_handle_banked(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_PRESETS], (tFootswitchLayoutEntry*)&FootswitchLayouts[FootswitchControl.external_switch_mode]);
-                } break;
-
-                case FOOTSWITCH_LAYOUT_DISABLED:
-                default:
-                {
-                    // nothing to do
-                } break;
-            }
-
-            // handle effects switching
-            footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_EFFECTS], FootswitchControl.ExternalFootswitchEffectHandler, MAX_EXTERNAL_EFFECT_FOOTSWITCHES);
-        }
 
         // Binary footswitch modes always hold button states, so can't check for reset
         if ((FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY) &&
@@ -919,8 +787,6 @@ void footswitches_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2C
 
     // save handles
     I2CMutexHandle = I2CMutex;
-
-#if CONFIG_TONEX_CONTROLLER_GPIO_FOOTSWITCHES
     // init GPIO
     gpio_config_t gpio_config_struct;
 
@@ -938,24 +804,6 @@ void footswitches_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2C
     gpio_config_struct.pull_down_en = GPIO_PULLDOWN_DISABLE;
     gpio_config_struct.intr_type = GPIO_INTR_DISABLE;
     gpio_config(&gpio_config_struct);
-#endif
-
-    // try to init I2C IO expander
-    if (SX1509_Init(bus_handle, I2CMutex) == ESP_OK)
-    {
-        ESP_LOGI(TAG, "Found External IO Expander");
-
-        // init all pins to inputs
-        for (uint8_t pin = 0; pin < 16; pin++)
-        {
-            SX1509_gpioMode(pin, EXPANDER_INPUT_PULLUP);
-        }
-        FootswitchControl.io_expander_ok = 1;
-    }
-    else
-    {
-        ESP_LOGI(TAG, "External IO Expander not found");
-    }
 
     // init leds
     leds_init();
