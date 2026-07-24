@@ -98,7 +98,6 @@ typedef struct
 } tFootswitchLayoutEntry;
 
 static tFootswitchControl FootswitchControl;
-static SemaphoreHandle_t I2CMutexHandle;
 
 static const __attribute__((unused)) tFootswitchLayoutEntry FootswitchLayouts[FOOTSWITCH_LAYOUT_LAST] =
 {
@@ -776,12 +775,10 @@ void footswitch_task(void *arg)
 * RETURN:
 * NOTES:
 *****************************************************************************/
-void footswitches_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2CMutex)
+void footswitches_init(void)
 {
     memset((void*)&FootswitchControl, 0, sizeof(FootswitchControl));
 
-    // save handles
-    I2CMutexHandle = I2CMutex;
     // init GPIO
     gpio_config_t gpio_config_struct;
 

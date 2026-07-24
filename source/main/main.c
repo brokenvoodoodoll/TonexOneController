@@ -269,7 +269,7 @@ void app_main(void)
 
     // init Footswitches
     ESP_LOGI(TAG, "Init footswitches");
-    footswitches_init(ic2_bus_handle_1, I2CMutex_1);
+    footswitches_init();
 
     // init USB
     ESP_LOGI(TAG, "Init USB");
