@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdio.h>
@@ -52,11 +52,11 @@ static uint8_t midi_serial_buffer[MIDI_SERIAL_BUFFER_SIZE];
 static uint8_t midi_serial_channel = 0;
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void __attribute__((unused)) midi_serial_uart_rx_purge(void)
 {
@@ -71,11 +71,11 @@ static void __attribute__((unused)) midi_serial_uart_rx_purge(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void midi_serial_task(void *arg)
 {
@@ -92,11 +92,6 @@ static void midi_serial_task(void *arg)
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
-    
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43B    
-    // 4.3B log UART shared with RS485 port, needs to be disabled
-    esp_log_level_set("*", ESP_LOG_NONE);
-#endif    
 
     int intr_alloc_flags = 0;
     ESP_ERROR_CHECK(uart_driver_install(UART_PORT_NUM, MIDI_SERIAL_BUFFER_SIZE * 2, 0, 0, NULL, intr_alloc_flags));
@@ -111,11 +106,11 @@ static void midi_serial_task(void *arg)
     vTaskDelay(pdMS_TO_TICKS(5));
     midi_serial_uart_rx_purge();
 
-    while (1) 
+    while (1)
     {
         // try to read data from UART
         rx_length = uart_read_bytes(UART_PORT_NUM, midi_serial_buffer, (MIDI_SERIAL_BUFFER_SIZE - 1), pdMS_TO_TICKS(5));
-        
+
         if (rx_length != 0)
         {
             // process data
@@ -136,14 +131,14 @@ static void midi_serial_task(void *arg)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void midi_serial_init(void)
-{	
+{
     memset((void*)midi_serial_buffer, 0, sizeof(midi_serial_buffer));
 
     // get the channel to use
@@ -156,7 +151,7 @@ void midi_serial_init(void)
     }
 
     // debug code to test data processor
-    //                       header       PC            ts      CC    first       second      third         ts      PC   
+    //                       header       PC            ts      CC    first       second      third         ts      PC
     //uint8_t test_data[] = {0x80, 0x80, 0xC0, 0x00,   0x80,   0xB0, 0x22, 0x7F, 0x43, 0x00, 0x0C, 0x21,   0x80,   0xC0, 0x02};
     //                       header      PC
     //uint8_t test_data[] = {0x80, 0x80, 0xC0, 0x03};
@@ -166,7 +161,7 @@ void midi_serial_init(void)
     //uint8_t test_data[] = {0xB0, 0x03, 0x00};
     //                       PC
     //uint8_t test_data[] = {0xC0, 0x00};
-    //                       PC          CC 
+    //                       PC          CC
     //uint8_t test_data[] = {0xC0, 0x00, 0xB0, 116, 64};
     //midi_helper_process_incoming_data(test_data, sizeof(test_data), midi_serial_channel, 1);
 

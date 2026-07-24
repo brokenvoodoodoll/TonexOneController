@@ -14,7 +14,6 @@ idf_component_register(SRCS
                        "leds.c"
                        "midi_helper.c"
                        "midi_helper_tonex.c"
-                       "LP5562.c"
                        "platform_devkitc.c"
                        "platform_wszero.c"
                        INCLUDE_DIRS "." "./"

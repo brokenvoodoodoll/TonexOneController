@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdio.h>
@@ -73,9 +73,9 @@ typedef struct
     uint32_t sample_counter;
     uint16_t last_binary_val;
     uint16_t current_bank;
-    uint16_t index_pending;    
-    esp_err_t (*footswitch_single_reader)(uint8_t, uint8_t*);    
-    esp_err_t (*footswitch_multiple_reader)(uint16_t*);    
+    uint16_t index_pending;
+    esp_err_t (*footswitch_single_reader)(uint8_t, uint8_t*);
+    esp_err_t (*footswitch_multiple_reader)(uint16_t*);
 } tFootswitchHandler;
 
 typedef struct
@@ -88,7 +88,7 @@ typedef struct
 {
     tFootswitchHandler Handlers[FOOTSWITCH_HANDLER_MAX];
     uint8_t io_expander_ok;
-    uint8_t onboard_switch_mode;   
+    uint8_t onboard_switch_mode;
     uint8_t external_switch_mode;
     tFootswitchEffectHandler ExternalFootswitchEffectHandler[MAX_EXTERNAL_EFFECT_FOOTSWITCHES];
     tFootswitchEffectHandler OnboardFootswitchEffectHandler[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
@@ -105,7 +105,7 @@ typedef struct
 static tFootswitchControl FootswitchControl;
 static SemaphoreHandle_t I2CMutexHandle;
 
-static const __attribute__((unused)) tFootswitchLayoutEntry FootswitchLayouts[FOOTSWITCH_LAYOUT_LAST] = 
+static const __attribute__((unused)) tFootswitchLayoutEntry FootswitchLayouts[FOOTSWITCH_LAYOUT_LAST] =
 {
     //tot  ppb  bd mask   bu mask
     {2,    2,   0x0000,   0x0000},            // FOOTSWITCH_LAYOUT_1X2
@@ -127,11 +127,11 @@ static const __attribute__((unused)) tFootswitchLayoutEntry FootswitchLayouts[FO
 };
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static uint8_t get_banks_count(tFootswitchLayoutEntry* layout)
 {
@@ -139,11 +139,11 @@ static uint8_t get_banks_count(tFootswitchLayoutEntry* layout)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_state)
 {
@@ -181,48 +181,24 @@ static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_
         *switch_state = 0;
         return ESP_OK;
     }
-
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43B || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY
-    // 4.3 display board uses onboard I2C IO expander
-    uint8_t value;
-
-    if (CH422G_read_input((uint8_t)button_index, &value) == ESP_OK)
-    {
-        result = ESP_OK;
-        *switch_state = (value == 0);
-    }
-#else
     // other boards can use direct IO pin
     *switch_state = (gpio_get_level((uint8_t)button_index) == 0);
 
-    result = ESP_OK;
-#endif
-
-    return result;
+    return ESP_OK;
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
 {
     esp_err_t result = ESP_FAIL;
     *switch_state = 0;
 
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43B || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY
-    // 4.3 display board uses onboard I2C IO expander
-    uint16_t values;
-
-    if (CH422G_read_all_input(&values) == ESP_OK)
-    {
-        result = ESP_OK;
-        *switch_state = values;
-    }
-#else
     // direct gpio
     if (FOOTSWITCH_1 != -1)
     {
@@ -244,18 +220,15 @@ static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
         *switch_state |= ((gpio_get_level(FOOTSWITCH_4) == 0) << 3);
     }
 
-    result = ESP_OK;
-#endif
-
-    return result;
+    return ESP_OK;
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t footswitch_read_single_offboard(uint8_t pin, uint8_t* switch_state)
 {
@@ -263,9 +236,9 @@ static esp_err_t footswitch_read_single_offboard(uint8_t pin, uint8_t* switch_st
     uint8_t level;
 
     if (FootswitchControl.io_expander_ok)
-    {       
+    {
         if (SX1509_digitalRead(pin, &level) == ESP_OK)
-        {            
+        {
             // debug
             //ESP_LOGI(TAG, "Footswitch read %d", (int)level_mask);
 
@@ -278,28 +251,28 @@ static esp_err_t footswitch_read_single_offboard(uint8_t pin, uint8_t* switch_st
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t footswitch_read_multiple_offboard(uint16_t* switch_states)
 {
     esp_err_t result = ESP_FAIL;
 
     if (FootswitchControl.io_expander_ok)
-    {       
+    {
         if (SX1509_getPinValues(switch_states) == ESP_OK)
-        {            
+        {
             // flip so 1 = switch pressed
             *switch_states = ~(*switch_states);
 
-#if 0            
+#if 0
             // debug code to dump footswitch states to log
             char debug_text_1[50] = {0};
             char debug_text_2[4] = {0};
-            for (uint8_t loop = 0; loop < 16; loop++)    
+            for (uint8_t loop = 0; loop < 16; loop++)
             {
                 if (((*switch_states) & (1 << (15 - loop))) != 0)
                 {
@@ -312,8 +285,8 @@ static esp_err_t footswitch_read_multiple_offboard(uint16_t* switch_states)
                 strcat(debug_text_1, debug_text_2);
             }
             ESP_LOGI(TAG, "Footswitches read: %s", debug_text_1);
-            vTaskDelay(500);    
-#endif 
+            vTaskDelay(500);
+#endif
 
             result = ESP_OK;
         }
@@ -323,15 +296,15 @@ static esp_err_t footswitch_read_multiple_offboard(uint16_t* switch_states)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandler* handler)
 {
-    uint8_t value;   
+    uint8_t value;
 
     switch (handler->state)
     {
@@ -339,7 +312,7 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
         default:
         {
             // read footswitches
-            if (handler->footswitch_single_reader(0, &value) == ESP_OK) 
+            if (handler->footswitch_single_reader(0, &value) == ESP_OK)
             {
                 if (value == 1)
                 {
@@ -348,7 +321,7 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
                     // foot switch 1 pressed
                     control_request_preset_down();
 
-                    // wait release	
+                    // wait release
                     handler->sample_counter = 0;
                     handler->state = FOOTSWITCH_WAIT_RELEASE_1;
                 }
@@ -365,7 +338,7 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
                         // foot switch 2 pressed, send event
                         control_request_preset_up();
 
-                        // wait release	
+                        // wait release
                         handler->sample_counter = 0;
                         handler->state = FOOTSWITCH_WAIT_RELEASE_2;
                     }
@@ -384,7 +357,7 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
                     if (handler->sample_counter == FOOTSWITCH_SAMPLE_COUNT)
                     {
                         // foot switch released
-                        handler->state = FOOTSWITCH_IDLE;		
+                        handler->state = FOOTSWITCH_IDLE;
                     }
                 }
                 else
@@ -407,7 +380,7 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
                     {
                         // foot switch released
                         handler->state = FOOTSWITCH_IDLE;
-                    }                 
+                    }
                 }
                 else
                 {
@@ -420,15 +393,15 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler* handler, tFootswitchLayoutEntry* layout)
 {
-    uint16_t binary_val = 0;    
+    uint16_t binary_val = 0;
     uint16_t loop;
     uint16_t mask = 0;
 
@@ -438,7 +411,7 @@ static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler*
         // failed
         return;
     }
-    
+
     // check if switch is outside of the used range
     for (loop = 0; loop < layout->total_switches; loop++)
     {
@@ -454,7 +427,7 @@ static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler*
         case FOOTSWITCH_IDLE:
         {
             // any buttons pressed?
-            if (binary_val != 0) 
+            if (binary_val != 0)
             {
                 // check if bank down is pressed
                 if (binary_val == layout->bank_down_switch_mask)
@@ -471,7 +444,7 @@ static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler*
                     else if (handler->current_bank > 0)
                     {
                         // bank down
-                        handler->current_bank--;   
+                        handler->current_bank--;
                         ESP_LOGI(TAG, "Footswitch banked down %d", handler->current_bank);
                         control_request_bank_index(handler->current_bank);
                     }
@@ -514,9 +487,9 @@ static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler*
                     uint8_t new_preset = handler->current_bank * layout->presets_per_bank;
 
                     // get the index from the bit set
-                    for (uint8_t loop = 1; loop < layout->presets_per_bank; loop++)    
+                    for (uint8_t loop = 1; loop < layout->presets_per_bank; loop++)
                     {
-                        if ((handler->index_pending & (1 << loop)) != 0)    
+                        if ((handler->index_pending & (1 << loop)) != 0)
                         {
                             new_preset += loop;
                             break;
@@ -549,16 +522,16 @@ static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler*
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void __attribute__((unused)) footswitch_handle_quad_binary(tFootswitchHandler* handler)
 {
     uint8_t value;
-    uint8_t binary_val = 0;    
+    uint8_t binary_val = 0;
 
     // read all 4 switches (and swap so 1 is pressed)
     handler->footswitch_single_reader(0, &value);
@@ -601,15 +574,15 @@ static void __attribute__((unused)) footswitch_handle_quad_binary(tFootswitchHan
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEffectHandler* fx_handler, uint8_t max_configs)
 {
-    uint8_t loop; 
+    uint8_t loop;
     uint8_t value;
     uint16_t param;
     float new_value;
@@ -621,11 +594,11 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
          case FOOTSWITCH_IDLE:
          default:
          {
-            for (loop = 0; loop < max_configs; loop++)    
+            for (loop = 0; loop < max_configs; loop++)
             {
                 // is this switch configured?
                 if (fx_handler[loop].config.Switch != SWITCH_NOT_USED)
-                {                  
+                {
                     // check if switch is pressed
                     if (handler->footswitch_single_reader(fx_handler[loop].config.Switch, &value) == ESP_OK)
                     {
@@ -675,7 +648,7 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
                                             new_value = (float)fx_handler[loop].config.Value_1;
                                         }
 
-                                        midi_helper_adjust_param_via_midi(fx_handler[loop].config.CC, new_value);     
+                                        midi_helper_adjust_param_via_midi(fx_handler[loop].config.CC, new_value);
                                     }
                                     else if (param_ptr[param].Type == MODELLER_PARAM_TYPE_RANGE)
                                     {
@@ -694,7 +667,7 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
                                         float param_diff = fabs(current_param_value - value_1);
 
                                         // debug
-                                        //ESP_LOGI(TAG, "Footswitch FX Param difference %f", param_diff);    
+                                        //ESP_LOGI(TAG, "Footswitch FX Param difference %f", param_diff);
 
                                         if (param_diff < 0.1f)
                                         {
@@ -705,15 +678,15 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
                                             new_value = fx_handler[loop].config.Value_1;
                                         }
 
-                                        midi_helper_adjust_param_via_midi(fx_handler[loop].config.CC, new_value);      
-                                    } 
+                                        midi_helper_adjust_param_via_midi(fx_handler[loop].config.CC, new_value);
+                                    }
                                     else
                                     {
                                         ESP_LOGI(TAG, "Footswitch FX Unknown param type");
                                         new_value = 0.0f;
-                                    }                                  
+                                    }
 
-                                    ESP_LOGI(TAG, "Footswitch FX Param %d changed to %d", (int)param, (int)new_value);                                                                       
+                                    ESP_LOGI(TAG, "Footswitch FX Param %d changed to %d", (int)param, (int)new_value);
                                 }
                             }
 
@@ -747,14 +720,14 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void footswitch_task(void *arg)
-{       
+{
     __attribute__((unused)) uint8_t value;
     __attribute__((unused)) uint32_t reset_timer = 0;
     uint8_t configs;
@@ -766,14 +739,6 @@ void footswitch_task(void *arg)
 
     // get the currently configured mode from web config
     FootswitchControl.onboard_switch_mode = control_get_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE);
-
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43B || CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY
-    // 4.3B doesn't have enough IO, only supports dual mode and disabled
-    if ((FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X2) && (FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_DISABLED))
-    {
-        FootswitchControl.onboard_switch_mode = FOOTSWITCH_LAYOUT_1X2;
-    }
-#endif
 
     ESP_LOGI(TAG, "Footswitch Internal layout: %d", (int)FootswitchControl.onboard_switch_mode);
 
@@ -798,13 +763,13 @@ void footswitch_task(void *arg)
         FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_2 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL2 + (configs * 4));
 
         // debug
-        //ESP_LOGI(TAG, "Config Internal Footswitch %d, %d, %d, %d, %d", (int)configs, 
+        //ESP_LOGI(TAG, "Config Internal Footswitch %d, %d, %d, %d, %d", (int)configs,
         //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Switch,
         //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.CC,
         //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_1,
         //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_2);
     }
-    
+
     // setup handler for onboard IO footswitches
     FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS].footswitch_single_reader = &footswitch_read_single_onboard;
     FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS].footswitch_multiple_reader = &footswitch_read_multiple_onboard;
@@ -822,10 +787,8 @@ void footswitch_task(void *arg)
 
     while (1)
     {
-        // Waveshare 4.3 (not B) development board has different pinout 
-#if !CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY        
         // handle onboard IO foot switches (direct GPIO and IO expander on main PCB)
-        switch (FootswitchControl.onboard_switch_mode) 
+        switch (FootswitchControl.onboard_switch_mode)
         {
             case FOOTSWITCH_LAYOUT_1X2:
             {
@@ -855,12 +818,11 @@ void footswitch_task(void *arg)
 
         // handle effects switching
         footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS], FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
-#endif 
 
         // did we find an IO expander on boot?
         if (FootswitchControl.io_expander_ok)
         {
-            switch (FootswitchControl.external_switch_mode) 
+            switch (FootswitchControl.external_switch_mode)
             {
                 case FOOTSWITCH_LAYOUT_1X2:
                 {
@@ -892,21 +854,20 @@ void footswitch_task(void *arg)
                     // handle external footswitches as banked
                     footswitch_handle_banked(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_PRESETS], (tFootswitchLayoutEntry*)&FootswitchLayouts[FootswitchControl.external_switch_mode]);
                 } break;
-          
+
                 case FOOTSWITCH_LAYOUT_DISABLED:
                 default:
                 {
                     // nothing to do
                 } break;
             }
-                    
+
             // handle effects switching
             footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_EXTERNAL_EFFECTS], FootswitchControl.ExternalFootswitchEffectHandler, MAX_EXTERNAL_EFFECT_FOOTSWITCHES);
         }
 
-#if !CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_43DEVONLY  
         // Binary footswitch modes always hold button states, so can't check for reset
-        if ((FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY) && 
+        if ((FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY) &&
             (FootswitchControl.external_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY))
         {
             // check for button held for data reset
@@ -915,16 +876,16 @@ void footswitch_task(void *arg)
                 if (footswitch_read_single_onboard(0, &value) == ESP_OK)
                 {
                     if (value == 1)
-                    {        
+                    {
                         reset_timer++;
 
                         // debug
-                        //ESP_LOGI(TAG, "Reset timer: %d", (int)reset_timer);  
+                        //ESP_LOGI(TAG, "Reset timer: %d", (int)reset_timer);
 
                         if (reset_timer > BUTTON_FACTORY_RESET_TIME)
                         {
-                            ESP_LOGI(TAG, "Config Reset to default");  
-                            control_set_default_config(); 
+                            ESP_LOGI(TAG, "Config Reset to default");
+                            control_set_default_config();
 
                             // save and reboot
                             control_save_user_data(1);
@@ -937,7 +898,6 @@ void footswitch_task(void *arg)
                 }
             }
         }
-#endif 
 
         // handle leds from this task, to save wasting ram on another task for it
         leds_handle();
@@ -947,20 +907,20 @@ void footswitch_task(void *arg)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void footswitches_init(i2c_master_bus_handle_t bus_handle, SemaphoreHandle_t I2CMutex)
-{	
+{
     memset((void*)&FootswitchControl, 0, sizeof(FootswitchControl));
 
     // save handles
     I2CMutexHandle = I2CMutex;
 
-#if CONFIG_TONEX_CONTROLLER_GPIO_FOOTSWITCHES    
+#if CONFIG_TONEX_CONTROLLER_GPIO_FOOTSWITCHES
     // init GPIO
     gpio_config_t gpio_config_struct;
 

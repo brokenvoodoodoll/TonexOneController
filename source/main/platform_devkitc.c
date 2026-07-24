@@ -68,7 +68,6 @@ limitations under the License.
 #include "CH422G.h"
 #include "control.h"
 #include "task_priorities.h"
-#include "LP5562.h"
 #include "tonex_params.h"
 
 #if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_DEVKITC
