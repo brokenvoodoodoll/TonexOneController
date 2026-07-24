@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 
@@ -25,11 +25,9 @@ extern "C" {
 
 #define USB_DAEMON_TASK_PRIORITY        (tskIDLE_PRIORITY + 4)
 #define USB_CLASS_TASK_PRIORITY         (tskIDLE_PRIORITY + 4)
-#define DISPLAY_TASK_PRIORITY           (tskIDLE_PRIORITY + 2)
 #define CTRL_TASK_PRIORITY              (tskIDLE_PRIORITY + 3)
-#define MIDI_SERIAL_TASK_PRIORITY       (tskIDLE_PRIORITY + 2)
+#define DISPLAY_TASK_PRIORITY           (tskIDLE_PRIORITY + 2)
 #define FOOTSWITCH_TASK_PRIORITY        (tskIDLE_PRIORITY + 1)
-#define WIFI_TASK_PRIORITY              (tskIDLE_PRIORITY + 1)
 
 #ifdef __cplusplus
 } /*extern "C"*/

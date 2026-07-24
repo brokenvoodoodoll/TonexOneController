@@ -40,18 +40,11 @@ extern SemaphoreHandle_t I2CMutex_2;
     #define I2C_MASTER_2_SCL_IO  -1
     #define I2C_MASTER_2_SDA_IO  -1
 
-    #define EXTERNAL_IO_EXPANDER_BUS       I2C_MASTER_NUM_1
-    #define EXTERNAL_IO_EXPANDER_MUTEX     I2CMutex_1
-
     // direct IO pins
     #define FOOTSWITCH_1		GPIO_NUM_4
     #define FOOTSWITCH_2		GPIO_NUM_6
     #define FOOTSWITCH_3		GPIO_NUM_2
     #define FOOTSWITCH_4		GPIO_NUM_1
-
-    // Midi
-    #define UART_RX_PIN         GPIO_NUM_5
-    #define UART_TX_PIN         GPIO_NUM_7
 
     // leds
     #define LED_OUTPUT_GPIO_NUM    GPIO_NUM_21
@@ -65,18 +58,11 @@ extern SemaphoreHandle_t I2CMutex_2;
     #define I2C_MASTER_2_SCL_IO  -1
     #define I2C_MASTER_2_SDA_IO  -1
 
-    #define EXTERNAL_IO_EXPANDER_BUS       I2C_MASTER_NUM_1
-    #define EXTERNAL_IO_EXPANDER_MUTEX     I2CMutex_1
-
     // direct IO pins
     #define FOOTSWITCH_1		GPIO_NUM_4
     #define FOOTSWITCH_2		GPIO_NUM_6
     #define FOOTSWITCH_3		GPIO_NUM_2
     #define FOOTSWITCH_4		GPIO_NUM_1
-
-    // Midi
-    #define UART_RX_PIN         GPIO_NUM_5
-    #define UART_TX_PIN         GPIO_NUM_7
 
     // leds
     #define LED_OUTPUT_GPIO_NUM   GPIO_NUM_48

@@ -59,7 +59,6 @@ limitations under the License.
 #include "usb_tonex_one.h"
 #include "footswitches.h"
 #include "control.h"
-#include "midi_serial.h"
 #include "tonex_params.h"
 #include "platform_common.h"
 
@@ -270,25 +269,7 @@ void app_main(void)
 
     // init Footswitches
     ESP_LOGI(TAG, "Init footswitches");
-    if (EXTERNAL_IO_EXPANDER_BUS == I2C_MASTER_NUM_1)
-    {
-        footswitches_init(ic2_bus_handle_1, EXTERNAL_IO_EXPANDER_MUTEX);
-    }
-    else
-    {
-        footswitches_init(ic2_bus_handle_2, EXTERNAL_IO_EXPANDER_MUTEX);
-    }
-
-    if (control_get_config_item_int(CONFIG_ITEM_MIDI_ENABLE))
-    {
-        // init Midi serial
-        ESP_LOGI(TAG, "Init MIDI Serial");
-        midi_serial_init();
-    }
-    else
-    {
-        ESP_LOGI(TAG, "Serial MIDI disabled");
-    }
+    footswitches_init(ic2_bus_handle_1, I2CMutex_1);
 
     // init USB
     ESP_LOGI(TAG, "Init USB");
