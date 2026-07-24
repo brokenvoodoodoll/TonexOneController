@@ -22,24 +22,11 @@ void control_load_config(void);
 
 enum ConfigItems
 {
-    CONFIG_ITEM_BT_MODE,
-    CONFIG_ITEM_MV_CHOC_ENABLE,
-    CONFIG_ITEM_XV_MD1_ENABLE,
-    CONFIG_ITEM_CUSTOM_BT_ENABLE,
-    CONFIG_ITEM_BT_CUSTOM_NAME,
-    CONFIG_ITEM_MIDI_ENABLE,
-    CONFIG_ITEM_MIDI_CHANNEL,
     CONFIG_ITEM_TOGGLE_BYPASS,
     CONFIG_ITEM_LOOP_AROUND,
     CONFIG_ITEM_FOOTSWITCH_MODE,
-    CONFIG_ITEM_ENABLE_BT_MIDI_CC,
-    CONFIG_ITEM_WIFI_MODE,
-    CONFIG_ITEM_WIFI_SSID,
-    CONFIG_ITEM_WIFI_PASSWORD,
     CONFIG_ITEM_SCREEN_ROTATION,
     CONFIG_ITEM_SAVE_PRESET_TO_SLOT,
-    CONFIG_ITEM_WIFI_TX_POWER,
-    CONFIG_ITEM_MDNS_NAME,
     CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT,
     CONFIG_ITEM_EXT_FOOTSW_EFFECT1_SW,
     CONFIG_ITEM_EXT_FOOTSW_EFFECT1_CC,
@@ -89,23 +76,7 @@ enum ConfigItems
     CONFIG_ITEM_INT_FOOTSW_EFFECT4_CC,
     CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL1,
     CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL2,
-    CONFIG_ITEM_ENABLE_HIGHER_TOUCH_SENS,
     CONFIG_ITEM_DISABLE_BPM_FLASHER,
-    CONFIG_ITEM_BT_PERIPHERAL_NAME
-};
-
-enum BluetoothModes
-{
-    BT_MODE_DISABLED,
-    BT_MODE_CENTRAL,
-    BT_MODE_PERIPHERAL,
-};
-
-enum WiFiModes
-{
-    WIFI_MODE_ACCESS_POINT_TIMED,       // access point for 1 minute on boot
-    WIFI_MODE_STATION,                  // station mode
-    WIFI_MODE_ACCESS_POINT              // access point, no timeout
 };
 
 enum ScreenRotation
@@ -124,26 +95,6 @@ enum SavePresetSlot
     SAVE_PRESET_SLOT_A,
     SAVE_PRESET_SLOT_B,
     SAVE_PRESET_SLOT_C
-};
-
-enum WiFiTxPower
-{
-    WIFI_TX_POWER_25,
-    WIFI_TX_POWER_50,
-    WIFI_TX_POWER_75,
-    WIFI_TX_POWER_100
-};
-
-enum ConfigTabs43BTonex
-{
-    CONFIG_TAB_GATE,
-    CONFIG_TAB_COMPRESSOR,
-    CONFIG_TAB_AMPLIFIER,
-    CONFIG_TAB_EQ,
-    CONFIG_TAB_MODULATION,
-    CONFIG_TAB_DELAY,
-    CONFIG_TAB_REVERB,
-    CONFIG_TAB_GLOBAL,
 };
 
 enum FootswitchLayouts
@@ -166,26 +117,6 @@ enum FootswitchLayouts
     FOOTSWITCH_LAYOUT_1X4_BINARY,         // 4 bit binary
     FOOTSWITCH_LAYOUT_LAST,
     FOOTSWITCH_LAYOUT_DISABLED = 0xFF
-};
-
-enum IOExpanderPins
-{
-    IO_EXPANDER_PIN_1,
-    IO_EXPANDER_PIN_2,
-    IO_EXPANDER_PIN_3,
-    IO_EXPANDER_PIN_4,
-    IO_EXPANDER_PIN_5,
-    IO_EXPANDER_PIN_6,
-    IO_EXPANDER_PIN_7,
-    IO_EXPANDER_PIN_8,
-    IO_EXPANDER_PIN_9,
-    IO_EXPANDER_PIN_10,
-    IO_EXPANDER_PIN_11,
-    IO_EXPANDER_PIN_12,
-    IO_EXPANDER_PIN_13,
-    IO_EXPANDER_PIN_14,
-    IO_EXPANDER_PIN_15,
-    IO_EXPANDER_PIN_16
 };
 
 enum ParamTypes
@@ -227,15 +158,12 @@ typedef struct __attribute__ ((packed))
     uint8_t Green;
 } tLedColour;
 
-#define MAX_WIFI_SSID_PW                        65
-#define MAX_MDNS_NAME                           32
 #define MAX_EXTERNAL_EFFECT_FOOTSWITCHES        8
 #define MAX_INTERNAL_EFFECT_FOOTSWITCHES        4
 #define SWITCH_NOT_USED                         0xFF
 #define MAX_SUPPORTED_PRESETS                   150
 #define MAX_PRESET_NAME_LENGTH                  33
 #define MAX_PC_MAP                              128 // 0 to 127, matches Midi values
-#define MAX_BT_PERIPHERAL_NAME                  25
 
 // thread safe public API
 void control_request_preset_up(void);
@@ -245,9 +173,6 @@ void control_request_bank_index(uint8_t index);
 void control_request_ab_bank_up(void);
 void control_request_ab_bank_down(void);
 void control_set_usb_status(uint32_t status);
-void control_set_bt_status(uint32_t status);
-void control_set_wifi_status(uint32_t status);
-void control_set_amp_skin_index(uint32_t status);
 void control_save_user_data(uint8_t reboot);
 void control_sync_preset_name(uint16_t index, char* name);
 void control_sync_preset_details(uint16_t index, char* name);

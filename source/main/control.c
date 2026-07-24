@@ -58,7 +58,6 @@ limitations under the License.
 #define MAX_TEXT_LENGTH                     128
 #define MAX_BT_CUSTOM_NAME                  25
 #define MAX_PRESET_USER_TEXT_LENGTH         32
-#define LEGACY_CONFIG_USER_COUNT            20
 
 #define MAX_CONFIG_SAVE_RETRIES             10
 #define CONTROL_QUEUE_WRITE_TIMEOUT         1000    // msec
@@ -74,9 +73,6 @@ enum CommandEvents
     EVENT_SET_PRESET_NAME,
     EVENT_SET_PRESET_DETAILS,
     EVENT_SET_USB_STATUS,
-    EVENT_SET_BT_STATUS,
-    EVENT_SET_WIFI_STATUS,
-    EVENT_SET_AMP_SKIN,
     EVENT_SAVE_USER_DATA,
     EVENT_SET_USER_TEXT,
     EVENT_SET_CONFIG_ITEM_INT,
@@ -92,86 +88,6 @@ typedef struct
     uint32_t Item;
 } tControlMessage;
 
-// note: is obsolete
-typedef struct __attribute__ ((packed))
-{
-    uint16_t SkinIndex;
-    char PresetDescription[MAX_TEXT_LENGTH];
-} tUserDataLegacy;
-
-// note here: obsolete data, moved to other locations
-typedef struct __attribute__ ((packed))
-{
-    tUserDataLegacy UserData[LEGACY_CONFIG_USER_COUNT];
-
-    uint8_t BTMode;
-
-    // bt client flags
-    uint16_t BTClientMvaveChocolateEnable: 1;
-    uint16_t BTClientXviveMD1Enable: 1;
-    uint16_t BTClientCustomEnable: 1;
-    uint16_t BTClientSpares: 13;
-
-    // serial Midi flags
-    uint8_t MidiSerialEnable: 1;
-    uint8_t EnableBTmidiCC: 1;
-    uint8_t MidiSpares: 6;
-
-    uint8_t MidiChannel;
-
-    // general flags
-    uint16_t GeneralDoublePressToggleBypass: 1;
-    uint16_t GeneralScreenRotation: 2;
-    uint16_t GeneralLoopAround: 1;
-    uint16_t GeneralSavePresetToSlot: 2;
-    uint16_t GeneralSpare: 10;
-
-    uint8_t FootswitchMode;
-    char BTClientCustomName[MAX_BT_CUSTOM_NAME];
-
-    // wifi
-    uint8_t WiFiMode : 4;
-    uint8_t WifiTxPower : 4;
-    char WifiSSID[MAX_WIFI_SSID_PW];
-    char WifiPassword[MAX_WIFI_SSID_PW];
-    char MDNSName[MAX_MDNS_NAME];
-
-    // external footswitches
-    uint8_t ExternalFootswitchPresetLayout;
-    tExternalFootswitchEffectConfig ExternalFootswitchEffectConfig[MAX_EXTERNAL_EFFECT_FOOTSWITCHES];
-
-    // internal footswitches
-    uint8_t InternalFootswitchPresetLayout;
-    tExternalFootswitchEffectConfig InternalFootswitchEffectConfig[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
-
-    // preset order mapping
-    uint8_t PresetOrder[MAX_SUPPORTED_PRESETS];
-} tLegacyConfigData;
-
-typedef struct __attribute__ ((packed))
-{
-    uint8_t BTMode;
-
-    // bt client flags
-    uint16_t BTClientMvaveChocolateEnable: 1;
-    uint16_t BTClientXviveMD1Enable: 1;
-    uint16_t BTClientCustomEnable: 1;
-    uint16_t BTClientSpares: 13;
-
-    char BTClientCustomName[MAX_BT_CUSTOM_NAME];
-    char BTPeripheralName[MAX_BT_PERIPHERAL_NAME];
-} tBluetoothConfig;
-
-typedef struct __attribute__ ((packed))
-{
-    // serial Midi flags
-    uint8_t MidiSerialEnable: 1;
-    uint8_t EnableBTmidiCC: 1;
-    uint8_t MidiSpares: 6;
-
-    uint8_t MidiChannel;
-} tSMidiConfig;
-
 typedef struct __attribute__ ((packed))
 {
     uint16_t GeneralDoublePressToggleBypass: 1;
@@ -182,16 +98,6 @@ typedef struct __attribute__ ((packed))
     uint16_t GeneralHideBPM: 1;
     uint16_t GeneralSpare: 8;
 } tGeneralConfig;
-
-typedef struct __attribute__ ((packed))
-{
-    uint8_t WiFiMode : 4;
-    uint8_t WifiTxPower : 4;
-
-    char WifiSSID[MAX_WIFI_SSID_PW];
-    char WifiPassword[MAX_WIFI_SSID_PW];
-    char MDNSName[MAX_MDNS_NAME];
-} tWiFiConfig;
 
 typedef struct __attribute__ ((packed))
 {
@@ -218,21 +124,11 @@ typedef struct __attribute__ ((packed))
     uint8_t PCMap[MAX_PC_MAP];
 } tPCMapConfig;
 
-typedef struct __attribute__ ((packed))
-{
-    // selected skin indexes
-    uint8_t SkinIndex[MAX_SUPPORTED_PRESETS];
-} tSkinConfig;
-
 typedef struct
 {
-    tBluetoothConfig BTConfig;
-    tSMidiConfig MidiConfig;
     tGeneralConfig GeneralConfig;
-    tWiFiConfig WiFiConfig;
     tFootSwitchConfig FootSwitchConfig;
     tPresetOrderMappingConfig PresetOrderMappingConfig;
-    tSkinConfig SkinConfig;
     tPCMapConfig PCMapConfig;
 } tConfigData;
 
@@ -267,7 +163,6 @@ static uint8_t LoadUserData(void);
 static uint8_t SavePresetUserText(uint16_t preset_index, char* text);
 static uint8_t LoadPresetUserText(uint16_t preset_index, char* text);
 static void DumpUserConfig(void);
-static uint8_t MigrateUserData(void);
 
 /****************************************************************************
 * NAME:
@@ -431,36 +326,6 @@ static uint8_t process_control_command(tControlMessage* message)
 #endif
         } break;
 
-        case EVENT_SET_BT_STATUS:
-        {
-            ControlData.BTStatus = message->Value;
-
-#if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
-            // update UI
-            UI_SetBTStatus(ControlData.BTStatus);
-#endif
-        } break;
-
-        case EVENT_SET_WIFI_STATUS:
-        {
-            ControlData.WiFiStatus = message->Value;
-
-#if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
-            // update UI
-            UI_SetWiFiStatus(ControlData.WiFiStatus);
-#endif
-        } break;
-
-        case EVENT_SET_AMP_SKIN:
-        {
-            ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex] = message->Value;
-
-#if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
-            // update UI
-            UI_SetAmpSkin(ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]);
-#endif
-        } break;
-
         case EVENT_SAVE_USER_DATA:
         {
             // save it
@@ -492,42 +357,6 @@ static uint8_t process_control_command(tControlMessage* message)
         {
             switch (message->Item)
             {
-                case CONFIG_ITEM_BT_MODE:
-                {
-                    ESP_LOGI(TAG, "Config set BT mode %d", (int)message->Value);
-                    ControlData.ConfigData.BTConfig.BTMode = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_MV_CHOC_ENABLE:
-                {
-                    ESP_LOGI(TAG, "Config set MV Choc enable %d", (int)message->Value);
-                    ControlData.ConfigData.BTConfig.BTClientMvaveChocolateEnable = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_XV_MD1_ENABLE:
-                {
-                    ESP_LOGI(TAG, "Config set XV MD1 enable %d", (int)message->Value);
-                    ControlData.ConfigData.BTConfig.BTClientXviveMD1Enable = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_CUSTOM_BT_ENABLE:
-                {
-                    ESP_LOGI(TAG, "Config set custom BT enable %d", (int)message->Value);
-                    ControlData.ConfigData.BTConfig.BTClientCustomEnable = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_MIDI_ENABLE:
-                {
-                    ESP_LOGI(TAG, "Config set Midi enable %d", (int)message->Value);
-                    ControlData.ConfigData.MidiConfig.MidiSerialEnable = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_MIDI_CHANNEL:
-                {
-                    ESP_LOGI(TAG, "Config set Midi channel %d", (int)message->Value);
-                    ControlData.ConfigData.MidiConfig.MidiChannel = (uint8_t)message->Value;
-                } break;
-
                 case CONFIG_ITEM_TOGGLE_BYPASS:
                 {
                     ESP_LOGI(TAG, "Config set Toggle Bypass %d", (int)message->Value);
@@ -546,18 +375,6 @@ static uint8_t process_control_command(tControlMessage* message)
                     ControlData.ConfigData.FootSwitchConfig.FootswitchMode = (uint8_t)message->Value;
                 } break;
 
-                case CONFIG_ITEM_ENABLE_BT_MIDI_CC:
-                {
-                    ESP_LOGI(TAG, "Config set BT Midi CC enable %d", (int)message->Value);
-                    ControlData.ConfigData.MidiConfig.EnableBTmidiCC = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_WIFI_MODE:
-                {
-                    ESP_LOGI(TAG, "Config set WiFi modee %d", (int)message->Value);
-                    ControlData.ConfigData.WiFiConfig.WiFiMode = (uint8_t)message->Value;
-                } break;
-
                 case CONFIG_ITEM_SCREEN_ROTATION:
                 {
                     ESP_LOGI(TAG, "Config set screen rotation %d", (int)message->Value);
@@ -570,22 +387,10 @@ static uint8_t process_control_command(tControlMessage* message)
                     ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot = (uint8_t)message->Value & 0x03;
                 } break;
 
-                case CONFIG_ITEM_ENABLE_HIGHER_TOUCH_SENS:
-                {
-                    ESP_LOGI(TAG, "Config set higher touch sense %d", (int)message->Value);
-                    ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity = (uint8_t)message->Value & 0x01;
-                } break;
-
                 case CONFIG_ITEM_DISABLE_BPM_FLASHER:
                 {
                     ESP_LOGI(TAG, "Config set bpm display touch sense %d", (int)message->Value);
                     ControlData.ConfigData.GeneralConfig.GeneralHideBPM = (uint8_t)message->Value & 0x01;
-                } break;
-
-                case CONFIG_ITEM_WIFI_TX_POWER:
-                {
-                    ESP_LOGI(TAG, "Config set wifi tx power %d", (int)message->Value);
-                    ControlData.ConfigData.WiFiConfig.WifiTxPower = (uint8_t)message->Value & 0x0F;
                 } break;
 
                 case CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT:
@@ -880,47 +685,6 @@ static uint8_t process_control_command(tControlMessage* message)
                 {
                     ESP_LOGI(TAG, "Config set internal footsw effect4 Value_2 %d", (int)message->Value);
                     ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Value_2 = (uint8_t)message->Value;
-                } break;
-            }
-        } break;
-
-        case EVENT_SET_CONFIG_ITEM_STRING:
-        {
-            switch (message->Item)
-            {
-                case CONFIG_ITEM_BT_CUSTOM_NAME:
-                {
-                    ESP_LOGI(TAG, "Config set custom BT name %s", message->Text);
-                    strncpy(ControlData.ConfigData.BTConfig.BTClientCustomName, message->Text, MAX_BT_CUSTOM_NAME - 1);
-                    ControlData.ConfigData.BTConfig.BTClientCustomName[MAX_BT_CUSTOM_NAME - 1] = 0;
-                } break;
-
-                case CONFIG_ITEM_WIFI_SSID:
-                {
-                    ESP_LOGI(TAG, "Config set WiFi SSID %s", message->Text);
-                    strncpy(ControlData.ConfigData.WiFiConfig.WifiSSID, message->Text, MAX_WIFI_SSID_PW - 1);
-                    ControlData.ConfigData.WiFiConfig.WifiSSID[MAX_WIFI_SSID_PW - 1] = 0;
-                } break;
-
-                case CONFIG_ITEM_WIFI_PASSWORD:
-                {
-                    ESP_LOGI(TAG, "Config set WiFi password <hidden>");
-                    strncpy(ControlData.ConfigData.WiFiConfig.WifiPassword, message->Text, MAX_WIFI_SSID_PW - 1);
-                    ControlData.ConfigData.WiFiConfig.WifiPassword[MAX_WIFI_SSID_PW - 1] = 0;
-                } break;
-
-                case CONFIG_ITEM_MDNS_NAME:
-                {
-                    ESP_LOGI(TAG, "Config set MDNS name %s", message->Text);
-                    strncpy(ControlData.ConfigData.WiFiConfig.MDNSName, message->Text, MAX_MDNS_NAME - 1);
-                    ControlData.ConfigData.WiFiConfig.MDNSName[MAX_MDNS_NAME - 1] = 0;
-                } break;
-
-                case CONFIG_ITEM_BT_PERIPHERAL_NAME:
-                {
-                    ESP_LOGI(TAG, "Config set BT perhiperal name %s", message->Text);
-                    strncpy(ControlData.ConfigData.BTConfig.BTPeripheralName, message->Text, MAX_BT_PERIPHERAL_NAME - 1);
-                    ControlData.ConfigData.BTConfig.BTPeripheralName[MAX_BT_PERIPHERAL_NAME - 1] = 0;
                 } break;
             }
         } break;
@@ -1222,52 +986,6 @@ void control_set_usb_status(uint32_t status)
 * RETURN:
 * NOTES:
 *****************************************************************************/
-void control_set_bt_status(uint32_t status)
-{
-    tControlMessage message;
-
-    ESP_LOGI(TAG, "control_set_bt_status");
-
-    message.Event = EVENT_SET_BT_STATUS;
-    message.Value = status;
-
-    // send to queue
-    if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
-    {
-        ESP_LOGE(TAG, "control_set_usb_status queue send failed!");
-    }
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
-void control_set_wifi_status(uint32_t status)
-{
-    tControlMessage message;
-
-    ESP_LOGI(TAG, "control_set_wifi_status %d", (int)status);
-
-    message.Event = EVENT_SET_WIFI_STATUS;
-    message.Value = status;
-
-    // send to queue
-    if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
-    {
-        ESP_LOGE(TAG, "control_set_wifi_status queue send failed!");
-    }
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
 void control_save_user_data(uint8_t reboot)
 {
     tControlMessage message;
@@ -1281,29 +999,6 @@ void control_save_user_data(uint8_t reboot)
     if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
     {
         ESP_LOGE(TAG, "control_save_user_data queue send failed!");
-    }
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
-void control_set_amp_skin_index(uint32_t status)
-{
-    tControlMessage message;
-
-    ESP_LOGI(TAG, "control_set_amp_skin_index");
-
-    message.Event = EVENT_SET_AMP_SKIN;
-    message.Value = status;
-
-    // send to queue
-    if (xQueueSend(control_input_queue, (void*)&message, pdMS_TO_TICKS(CONTROL_QUEUE_WRITE_TIMEOUT)) != pdPASS)
-    {
-        ESP_LOGE(TAG, "control_set_amp_skin_index queue send failed!");
     }
 }
 
@@ -1434,35 +1129,6 @@ uint32_t control_get_config_item_int(uint32_t item)
 
     switch (item)
     {
-        case CONFIG_ITEM_BT_MODE:
-        {
-            value = ControlData.ConfigData.BTConfig.BTMode;
-        } break;
-
-        case CONFIG_ITEM_MV_CHOC_ENABLE:
-        {
-            value = ControlData.ConfigData.BTConfig.BTClientMvaveChocolateEnable;
-        } break;
-
-        case CONFIG_ITEM_XV_MD1_ENABLE:
-        {
-            value = ControlData.ConfigData.BTConfig.BTClientXviveMD1Enable;
-        } break;
-
-        case CONFIG_ITEM_CUSTOM_BT_ENABLE:
-        {
-            value = ControlData.ConfigData.BTConfig.BTClientCustomEnable;
-        } break;
-
-        case CONFIG_ITEM_MIDI_ENABLE:
-        {
-            value = ControlData.ConfigData.MidiConfig.MidiSerialEnable;
-        } break;
-
-        case CONFIG_ITEM_MIDI_CHANNEL:
-        {
-            value = ControlData.ConfigData.MidiConfig.MidiChannel;
-        } break;
 
         case CONFIG_ITEM_TOGGLE_BYPASS:
         {
@@ -1479,16 +1145,6 @@ uint32_t control_get_config_item_int(uint32_t item)
             value = ControlData.ConfigData.FootSwitchConfig.FootswitchMode;
         } break;
 
-        case CONFIG_ITEM_ENABLE_BT_MIDI_CC:
-        {
-            value = ControlData.ConfigData.MidiConfig.EnableBTmidiCC;
-        } break;
-
-        case CONFIG_ITEM_WIFI_MODE:
-        {
-            value = ControlData.ConfigData.WiFiConfig.WiFiMode;
-        } break;
-
         case CONFIG_ITEM_SCREEN_ROTATION:
         {
             value = ControlData.ConfigData.GeneralConfig.GeneralScreenRotation;
@@ -1499,19 +1155,9 @@ uint32_t control_get_config_item_int(uint32_t item)
             value = ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot;
         } break;
 
-        case CONFIG_ITEM_ENABLE_HIGHER_TOUCH_SENS:
-        {
-            value = ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity;
-        } break;
-
         case CONFIG_ITEM_DISABLE_BPM_FLASHER:
         {
             value = ControlData.ConfigData.GeneralConfig.GeneralHideBPM;
-        } break;
-
-        case CONFIG_ITEM_WIFI_TX_POWER:
-        {
-            value = ControlData.ConfigData.WiFiConfig.WifiTxPower;
         } break;
 
         case CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT:
@@ -1775,54 +1421,6 @@ uint32_t control_get_config_item_int(uint32_t item)
 * RETURN:
 * NOTES:
 *****************************************************************************/
-void control_get_config_item_string(uint32_t item, char* name)
-{
-    switch (item)
-    {
-        case CONFIG_ITEM_BT_CUSTOM_NAME:
-        {
-            strncpy(name, ControlData.ConfigData.BTConfig.BTClientCustomName, MAX_BT_CUSTOM_NAME - 1);
-            name[MAX_BT_CUSTOM_NAME - 1] = 0;
-        } break;
-
-        case CONFIG_ITEM_WIFI_SSID:
-        {
-            strncpy(name, ControlData.ConfigData.WiFiConfig.WifiSSID, MAX_WIFI_SSID_PW - 1);
-            name[MAX_WIFI_SSID_PW - 1] = 0;
-        } break;
-
-        case CONFIG_ITEM_WIFI_PASSWORD:
-        {
-            strncpy(name, ControlData.ConfigData.WiFiConfig.WifiPassword, MAX_WIFI_SSID_PW - 1);
-            name[MAX_WIFI_SSID_PW - 1] = 0;
-        } break;
-
-        case CONFIG_ITEM_MDNS_NAME:
-        {
-            strncpy(name, ControlData.ConfigData.WiFiConfig.MDNSName, MAX_MDNS_NAME - 1);
-            name[MAX_MDNS_NAME - 1] = 0;
-        } break;
-
-        case CONFIG_ITEM_BT_PERIPHERAL_NAME:
-        {
-            strncpy(name, ControlData.ConfigData.BTConfig.BTPeripheralName, MAX_BT_PERIPHERAL_NAME - 1);
-            name[MAX_BT_PERIPHERAL_NAME - 1] = 0;
-        } break;
-
-        default:
-        {
-            ESP_LOGE(TAG, "Unknown/Invalid string parameter item %d", (int)item);
-        } break;
-    }
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
 void control_set_preset_order(uint8_t* order)
 {
     for (uint8_t index = 0; index < usb_get_max_presets_for_connected_modeller(); index++)
@@ -2053,136 +1651,14 @@ static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
 * RETURN:      none
 * NOTES:       none
 ****************************************************************************/
-static uint8_t MigrateUserData(void)
-{
-    esp_err_t err;
-    nvs_handle_t my_handle;
-    size_t required_size;
-    nvs_type_t out_type;
-    tLegacyConfigData* LegacyConfigData;
-
-    ESP_LOGI(TAG, "Checking MigrateUserData");
-
-    // open storage
-    err = nvs_open("storage", NVS_READWRITE, &my_handle);
-
-    if (err == ESP_OK)
-    {
-        // check if we have legacy config
-        if (nvs_find_key(my_handle, NVS_USERDATA_NAME, &out_type) == ESP_OK)
-        {
-            required_size = sizeof(tLegacyConfigData);
-
-            // allocate temp space for legacy config
-            LegacyConfigData = heap_caps_malloc(required_size, MALLOC_CAP_SPIRAM);
-
-            if (LegacyConfigData == NULL)
-            {
-                ESP_LOGE(TAG, "Checking MigrateUserData malloc failed!");
-                nvs_close(my_handle);
-                return 0;
-            }
-
-            // read data
-            if (nvs_get_blob(my_handle, NVS_USERDATA_NAME, (void*)LegacyConfigData, &required_size) == ESP_OK)
-            {
-                ESP_LOGI(TAG, "Legacy config migration");
-
-                // BT
-                ControlData.ConfigData.BTConfig.BTMode = LegacyConfigData->BTMode;
-                ControlData.ConfigData.BTConfig.BTClientMvaveChocolateEnable = LegacyConfigData->BTClientMvaveChocolateEnable;
-                ControlData.ConfigData.BTConfig.BTClientXviveMD1Enable = LegacyConfigData->BTClientXviveMD1Enable;
-                ControlData.ConfigData.BTConfig.BTClientCustomEnable = LegacyConfigData->BTClientCustomEnable;
-                memcpy((void*)ControlData.ConfigData.BTConfig.BTClientCustomName, LegacyConfigData->BTClientCustomName, MAX_BT_CUSTOM_NAME);
-
-                // midi
-                ControlData.ConfigData.MidiConfig.MidiSerialEnable = LegacyConfigData->MidiSerialEnable;
-                ControlData.ConfigData.MidiConfig.EnableBTmidiCC = LegacyConfigData->EnableBTmidiCC;
-                ControlData.ConfigData.MidiConfig.MidiChannel = LegacyConfigData->MidiChannel;
-
-                // general
-                ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass = LegacyConfigData->GeneralDoublePressToggleBypass;
-                ControlData.ConfigData.GeneralConfig.GeneralScreenRotation = LegacyConfigData->GeneralScreenRotation;
-                ControlData.ConfigData.GeneralConfig.GeneralLoopAround = LegacyConfigData->GeneralLoopAround;
-                ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot = LegacyConfigData->GeneralSavePresetToSlot;
-                ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity = 0;
-                ControlData.ConfigData.GeneralConfig.GeneralHideBPM = 0;
-
-                // WiFi
-                ControlData.ConfigData.WiFiConfig.WiFiMode = LegacyConfigData->WiFiMode;
-                ControlData.ConfigData.WiFiConfig.WifiTxPower = LegacyConfigData->WifiTxPower;
-                memcpy((void*)ControlData.ConfigData.WiFiConfig.WifiSSID, (void*)LegacyConfigData->WifiSSID, MAX_WIFI_SSID_PW);
-                memcpy((void*)ControlData.ConfigData.WiFiConfig.WifiPassword, (void*)LegacyConfigData->WifiPassword, MAX_WIFI_SSID_PW);
-                memcpy((void*)ControlData.ConfigData.WiFiConfig.MDNSName, (void*)LegacyConfigData->MDNSName, MAX_MDNS_NAME);
-
-                // Footswitch
-                ControlData.ConfigData.FootSwitchConfig.FootswitchMode = LegacyConfigData->FootswitchMode;
-                ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout = LegacyConfigData->ExternalFootswitchPresetLayout;
-                memcpy((void*)ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig, (void*)LegacyConfigData->ExternalFootswitchEffectConfig, sizeof(ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchEffectConfig));
-                ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout = LegacyConfigData->InternalFootswitchPresetLayout;
-                memcpy((void*)ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig, (void*)LegacyConfigData->InternalFootswitchEffectConfig, sizeof(ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig));
-
-                // preset order mapping
-                // start with 1:1 mapping
-                for (uint32_t loop = 0; loop < MAX_SUPPORTED_PRESETS; loop++)
-                {
-                    ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[loop] = loop;
-                }
-
-                // copy in legacy config
-                memcpy((void*)ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder, (void*)LegacyConfigData->PresetOrder, LEGACY_CONFIG_USER_COUNT);
-
-                // skins
-                for (uint8_t loop = 0; loop < LEGACY_CONFIG_USER_COUNT; loop++)
-                {
-                    ControlData.ConfigData.SkinConfig.SkinIndex[loop] = LegacyConfigData->UserData[loop].SkinIndex;
-                }
-            }
-
-            // delete the old data key
-            nvs_erase_key(my_handle, NVS_USERDATA_NAME);
-            nvs_commit(my_handle);
-            nvs_close(my_handle);
-
-            // delete temp memory
-            heap_caps_free(LegacyConfigData);
-
-            // debug
-            //DumpUserConfig();
-
-            // now save new config
-            SaveUserData();
-        }
-        else
-        {
-            ESP_LOGI(TAG, "No legacy config found, skipping migration");
-            nvs_close(my_handle);
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
 static uint8_t SaveUserData(void)
 {
     ESP_LOGI(TAG, "Writing User Data");
 
     // save each config item
-    SaveUserConfigItem((void*)&ControlData.ConfigData.BTConfig, sizeof(ControlData.ConfigData.BTConfig), NVS_USERDATA_BT_CONF);
-    SaveUserConfigItem((void*)&ControlData.ConfigData.MidiConfig, sizeof(ControlData.ConfigData.MidiConfig), NVS_USERDATA_SMIDI_CONF);
     SaveUserConfigItem((void*)&ControlData.ConfigData.GeneralConfig, sizeof(ControlData.ConfigData.GeneralConfig), NVS_USERDATA_GENERAL_CONF);
-    SaveUserConfigItem((void*)&ControlData.ConfigData.WiFiConfig, sizeof(ControlData.ConfigData.WiFiConfig), NVS_USERDATA_WIFI_CONF);
     SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
     SaveUserConfigItem((void*)&ControlData.ConfigData.PresetOrderMappingConfig, sizeof(ControlData.ConfigData.PresetOrderMappingConfig), NVS_USERDATA_PRESET_ORDER_CONF);
-    SaveUserConfigItem((void*)&ControlData.ConfigData.SkinConfig, sizeof(ControlData.ConfigData.SkinConfig), NVS_USERDATA_SKIN_CONF);
     SaveUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF);
 
     return 1;
@@ -2201,28 +1677,10 @@ static uint8_t LoadUserData(void)
     uint32_t loop;
 
     // load each config item
-    // Bluetooth
-    if (LoadUserConfigItem((void*)&ControlData.ConfigData.BTConfig, sizeof(ControlData.ConfigData.BTConfig), NVS_USERDATA_BT_CONF) != ESP_OK)
-    {
-        SaveUserConfigItem((void*)&ControlData.ConfigData.BTConfig, sizeof(ControlData.ConfigData.BTConfig), NVS_USERDATA_BT_CONF);
-    }
-
-    // Midi
-    if (LoadUserConfigItem((void*)&ControlData.ConfigData.MidiConfig, sizeof(ControlData.ConfigData.MidiConfig), NVS_USERDATA_SMIDI_CONF) != ESP_OK)
-    {
-        SaveUserConfigItem((void*)&ControlData.ConfigData.MidiConfig, sizeof(ControlData.ConfigData.MidiConfig), NVS_USERDATA_SMIDI_CONF);
-    }
-
     // General
     if (LoadUserConfigItem((void*)&ControlData.ConfigData.GeneralConfig, sizeof(ControlData.ConfigData.GeneralConfig), NVS_USERDATA_GENERAL_CONF) != ESP_OK)
     {
         SaveUserConfigItem((void*)&ControlData.ConfigData.GeneralConfig, sizeof(ControlData.ConfigData.GeneralConfig), NVS_USERDATA_GENERAL_CONF);
-    }
-
-    // WiFi
-    if (LoadUserConfigItem((void*)&ControlData.ConfigData.WiFiConfig, sizeof(ControlData.ConfigData.WiFiConfig), NVS_USERDATA_WIFI_CONF) != ESP_OK)
-    {
-        SaveUserConfigItem((void*)&ControlData.ConfigData.WiFiConfig, sizeof(ControlData.ConfigData.WiFiConfig), NVS_USERDATA_WIFI_CONF);
     }
 
     // Footswitch
@@ -2237,31 +1695,10 @@ static uint8_t LoadUserData(void)
         SaveUserConfigItem((void*)&ControlData.ConfigData.PresetOrderMappingConfig, sizeof(ControlData.ConfigData.PresetOrderMappingConfig), NVS_USERDATA_PRESET_ORDER_CONF);
     }
 
-    // Skin config
-    if (LoadUserConfigItem((void*)&ControlData.ConfigData.SkinConfig, sizeof(ControlData.ConfigData.SkinConfig), NVS_USERDATA_SKIN_CONF) != ESP_OK)
-    {
-        SaveUserConfigItem((void*)&ControlData.ConfigData.SkinConfig, sizeof(ControlData.ConfigData.SkinConfig), NVS_USERDATA_SKIN_CONF);
-    }
-
     // PC mapping
     if (LoadUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF) != ESP_OK)
     {
         SaveUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF);
-    }
-
-    // perform sanity check on values
-    if (ControlData.ConfigData.BTConfig.BTMode > BT_MODE_PERIPHERAL)
-    {
-        ESP_LOGW(TAG, "Config BTMode invalid");
-        ControlData.ConfigData.BTConfig.BTMode = BT_MODE_CENTRAL;
-        SaveUserConfigItem((void*)&ControlData.ConfigData.BTConfig, sizeof(ControlData.ConfigData.BTConfig), NVS_USERDATA_BT_CONF);
-    }
-
-    if (ControlData.ConfigData.MidiConfig.MidiChannel > 16)
-    {
-        ESP_LOGW(TAG, "Config MidiChannel invalid");
-        ControlData.ConfigData.MidiConfig.MidiChannel = 1;
-        SaveUserConfigItem((void*)&ControlData.ConfigData.MidiConfig, sizeof(ControlData.ConfigData.MidiConfig), NVS_USERDATA_SMIDI_CONF);
     }
 
     if (ControlData.ConfigData.FootSwitchConfig.FootswitchMode != FOOTSWITCH_LAYOUT_DISABLED)
@@ -2333,23 +1770,9 @@ static uint8_t LoadUserData(void)
 ****************************************************************************/
 static void DumpUserConfig(void)
 {
-    ESP_LOGI(TAG, "Config BT Mode: %d", (int)ControlData.ConfigData.BTConfig.BTMode);
-    ESP_LOGI(TAG, "Config BT Mvave Choc: %d", (int)ControlData.ConfigData.BTConfig.BTClientMvaveChocolateEnable);
-    ESP_LOGI(TAG, "Config BT Xvive MD1: %d", (int)ControlData.ConfigData.BTConfig.BTClientMvaveChocolateEnable);
-    ESP_LOGI(TAG, "Config BT Custom Client Enable: %d", (int)ControlData.ConfigData.BTConfig.BTClientCustomEnable);
-    ESP_LOGI(TAG, "Config BT Custom Client Name: %s", ControlData.ConfigData.BTConfig.BTClientCustomName);
-    ESP_LOGI(TAG, "Config BT Peripheral Name: %s", ControlData.ConfigData.BTConfig.BTPeripheralName);
-    ESP_LOGI(TAG, "Config Midi enable: %d", (int)ControlData.ConfigData.MidiConfig.MidiSerialEnable);
-    ESP_LOGI(TAG, "Config Midi channel: %d", (int)ControlData.ConfigData.MidiConfig.MidiChannel);
     ESP_LOGI(TAG, "Config Toggle bypass: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass);
     ESP_LOGI(TAG, "Config Loop around: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralLoopAround);
     ESP_LOGI(TAG, "Config Footswitch Mode: %d", (int)ControlData.ConfigData.FootSwitchConfig.FootswitchMode);
-    ESP_LOGI(TAG, "Config EnableBTmidiCC Mode: %d", (int)ControlData.ConfigData.MidiConfig.EnableBTmidiCC);
-    ESP_LOGI(TAG, "Config WiFi Mode: %d", (int)ControlData.ConfigData.WiFiConfig.WiFiMode);
-    ESP_LOGI(TAG, "Config WiFi SSID: %s", ControlData.ConfigData.WiFiConfig.WifiSSID);
-    ESP_LOGI(TAG, "Config WiFi Password: <hidden>");
-    ESP_LOGI(TAG, "Config MDNS name: %s", ControlData.ConfigData.WiFiConfig.MDNSName);
-    ESP_LOGI(TAG, "Config WiFi TX Power: %d", ControlData.ConfigData.WiFiConfig.WifiTxPower);
     ESP_LOGI(TAG, "Config Screen Rotation: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralScreenRotation);
     ESP_LOGI(TAG, "Config Save preset to slot: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot);
     ESP_LOGI(TAG, "Config Ext Footsw Prst Layout: %d", (int)ControlData.ConfigData.FootSwitchConfig.ExternalFootswitchPresetLayout);
@@ -2507,30 +1930,10 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
 *****************************************************************************/
 void control_set_default_config(void)
 {
-    ControlData.ConfigData.BTConfig.BTMode = BT_MODE_CENTRAL;
-    ControlData.ConfigData.BTConfig.BTClientMvaveChocolateEnable = 1;
-    ControlData.ConfigData.BTConfig.BTClientXviveMD1Enable = 1;
-    ControlData.ConfigData.BTConfig.BTClientCustomEnable = 0;
-
     ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass = 0;
     ControlData.ConfigData.GeneralConfig.GeneralLoopAround = 0;
 
-#if CONFIG_TONEX_CONTROLLER_DEFAULT_MIDI_ENABLE
-    ControlData.ConfigData.MidiConfig.MidiSerialEnable = 1;
-#else
-    ControlData.ConfigData.MidiConfig.MidiSerialEnable = 0;
-#endif
-
-    ControlData.ConfigData.MidiConfig.MidiChannel = 1;
     ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_1X2;
-    ControlData.ConfigData.MidiConfig.EnableBTmidiCC = 0;
-    memset((void*)ControlData.ConfigData.BTConfig.BTClientCustomName, 0, sizeof(ControlData.ConfigData.BTConfig.BTClientCustomName));
-    strcpy(ControlData.ConfigData.BTConfig.BTPeripheralName, "TnxBT");
-    ControlData.ConfigData.WiFiConfig.WiFiMode = WIFI_MODE_ACCESS_POINT_TIMED;
-    strcpy(ControlData.ConfigData.WiFiConfig.WifiSSID, "TonexConfig");
-    strcpy(ControlData.ConfigData.WiFiConfig.WifiPassword, "12345678");
-    strcpy(ControlData.ConfigData.WiFiConfig.MDNSName, "tonex");
-    ControlData.ConfigData.WiFiConfig.WifiTxPower = WIFI_TX_POWER_25;
 
 #if CONFIG_TONEX_CONTROLLER_SCREEN_ROTATION_DEFAULT_180
     ControlData.ConfigData.GeneralConfig.GeneralScreenRotation = SCREEN_ROTATION_180;
@@ -2664,9 +2067,6 @@ void control_load_config(void)
     {
         ESP_LOGE(TAG, "Failed to init NVS");
     }
-
-    // check if we need to migrate user data from old scheme to new scheme
-    MigrateUserData();
 
     // load the non-volatile user data
     LoadUserData();
