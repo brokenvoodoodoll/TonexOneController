@@ -1882,39 +1882,6 @@ uint8_t* control_get_pc_map(void)
 * RETURN:
 * NOTES:
 *****************************************************************************/
-void control_set_skin_next(void)
-{
-    if (ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex] < (SKIN_MAX - 1))
-    {
-        ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]++;
-        control_set_amp_skin_index(ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]);
-    }
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
-void control_set_skin_previous(void)
-{
-    if (ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex] > 0)
-    {
-        ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]--;
-
-        control_set_amp_skin_index(ControlData.ConfigData.SkinConfig.SkinIndex[ControlData.PresetIndex]);
-    }
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
 void control_set_sync_complete(void)
 {
     ControlData.SyncComplete = 1;

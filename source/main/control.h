@@ -20,65 +20,6 @@ limitations under the License.
 void control_init(void);
 void control_load_config(void);
 
-enum Skins
-{
-    // Amps
-    AMP_SKIN_JCM,
-    AMP_SKIN_SILVERFACE,
-    AMP_SKIN_TONEXAMPBLACK,
-    AMP_SKIN_5150,
-    AMP_SKIN_AMPEGCHROME,
-    AMP_SKIN_FENDERTWEEDBIG,
-    AMP_SKIN_FENDERHOTROD,
-    AMP_SKIN_MESABOOGIEDUAL,
-    AMP_SKIN_ELEGANTBLUE,
-    AMP_SKIN_MODERNWHITEPLEXI,
-    AMP_SKIN_ROLANDJAZZ,
-    AMP_SKIN_ORANGEOR120,
-    AMP_SKIN_MODERNBLACKPLEXI,
-    AMP_SKIN_FENDERTWIN,
-    AMP_SKIN_BA500,
-    AMP_SKIN_MESAMARKWOOD,
-    AMP_SKIN_MESAMARKV,
-    AMP_SKIN_JTM,
-    AMP_SKIN_JBDUMBLE1,
-    AMP_SKIN_JETCITY,
-    AMP_SKIN_AC30,
-    AMP_SKIN_EVH,
-    AMP_SKIN_TONEXAMPRED,
-    AMP_SKIN_FRIEDMANN,
-    AMP_SKIN_SUPRO,
-    AMP_SKIN_DIEZEL,
-    AMP_SKIN_WHITEMODERN,
-    AMP_SKIN_WOODAMP,
-
-    // Pedals
-    PEDAL_SKIN_BIGMUFF,
-    PEDAL_SKIN_BOSSBLACK,
-    PEDAL_SKIN_BOSSSILVER,
-    PEDAL_SKIN_BOSSYELLOW,
-    PEDAL_SKIN_FUZZRED,
-    PEDAL_SKIN_FUZZSILVER,
-    PEDAL_SKIN_IBANEZBLUE,
-    PEDAL_SKIN_IBANEZDARKBLUE,
-    PEDAL_SKIN_IBANEZGREEN,
-    PEDAL_SKIN_IBANEZRED,
-    PEDAL_SKIN_KLONGOLD,
-    PEDAL_SKIN_LIFEPEDAL,
-    PEDAL_SKIN_MORNINGGLORY,
-    PEDAL_SKIN_MXRDOUBLEBLACK,
-    PEDAL_SKIN_MXRDOUBLERED,
-    PEDAL_SKIN_MXRSINGLEBLACK,
-    PEDAL_SKIN_MXRSINGLEGOLD,
-    PEDAL_SKIN_MXRSINGLEGREEN,
-    PEDAL_SKIN_MXRSINGLEORANGE,
-    PEDAL_SKIN_MXRSINGLEWHITE,
-    PEDAL_SKIN_MXRSINGLEYELLOW,
-    PEDAL_SKIN_RATYELLOW,
-
-    SKIN_MAX        // must be last
-};
-
 enum ConfigItems
 {
     CONFIG_ITEM_BT_MODE,
@@ -307,8 +248,6 @@ void control_set_usb_status(uint32_t status);
 void control_set_bt_status(uint32_t status);
 void control_set_wifi_status(uint32_t status);
 void control_set_amp_skin_index(uint32_t status);
-void control_set_skin_next(void);
-void control_set_skin_previous(void);
 void control_save_user_data(uint8_t reboot);
 void control_sync_preset_name(uint16_t index, char* name);
 void control_sync_preset_details(uint16_t index, char* name);
