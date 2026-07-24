@@ -65,7 +65,6 @@ limitations under the License.
 #include "midi_serial.h"
 #include "leds.h"
 #include "tonex_params.h"
-#include "valeton_params.h"
 #include "platform_common.h"
 
 #define I2C_MASTER_FREQ_HZ              400000      /*!< I2C master clock frequency */

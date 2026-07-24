@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdio.h>
@@ -45,7 +45,6 @@ limitations under the License.
 #include "usb_tonex_common.h"
 #include "usb_tonex_one.h"
 #include "usb_tonex.h"
-#include "usb_valeton_gp5.h"
 #include "control.h"
 #include "task_priorities.h"
 
@@ -70,20 +69,20 @@ static uint8_t AmpModellerType = AMP_MODELLER_NONE;
 static QueueHandle_t usb_input_queue;
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void client_event_cb(const usb_host_client_event_msg_t *event_msg, void *arg)
 {
     class_driver_t *driver_obj = (class_driver_t *)arg;
 
-    switch (event_msg->event) 
+    switch (event_msg->event)
     {
         case USB_HOST_CLIENT_EVENT_NEW_DEV:
-            if (driver_obj->dev_addr == 0) 
+            if (driver_obj->dev_addr == 0)
             {
                 driver_obj->dev_addr = event_msg->new_dev.address;
 
@@ -93,7 +92,7 @@ static void client_event_cb(const usb_host_client_event_msg_t *event_msg, void *
             break;
 
         case USB_HOST_CLIENT_EVENT_DEV_GONE:
-            if (driver_obj->dev_hdl != NULL) 
+            if (driver_obj->dev_hdl != NULL)
             {
                 // Cancel any other actions and close the device next
                 driver_obj->actions |= CLASS_DRIVER_ACTION_CLOSE_DEV;
@@ -107,11 +106,11 @@ static void client_event_cb(const usb_host_client_event_msg_t *event_msg, void *
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void class_driver_task(void *arg)
 {
@@ -120,15 +119,15 @@ void class_driver_task(void *arg)
     class_driver_t driver_obj = {0};
     uint8_t exit = 0;
     const usb_device_desc_t* dev_desc;
-    usb_device_info_t dev_info;    
+    usb_device_info_t dev_info;
 
-    ESP_LOGI(TAG, "class_driver_task() start");   
+    ESP_LOGI(TAG, "class_driver_task() start");
 
     //Wait until daemon task has installed USB Host Library
     xSemaphoreTake(signaling_sem, portMAX_DELAY);
 
     ESP_LOGI(TAG, "Registering Client");
-    usb_host_client_config_t client_config = 
+    usb_host_client_config_t client_config =
     {
         .is_synchronous = false,    //Synchronous clients currently not supported. Set this to false
         .max_num_event_msg = CLIENT_NUM_EVENT_MSG,
@@ -141,21 +140,21 @@ void class_driver_task(void *arg)
 
     if (err != ESP_OK)
     {
-        ESP_LOGI(TAG, "usb_host_client_register() failed!");   
+        ESP_LOGI(TAG, "usb_host_client_register() failed!");
     }
 
     driver_obj.actions = CLASS_DRIVER_ACTION_NONE;
 
-    while (!exit) 
+    while (!exit)
     {
         if (driver_obj.actions == CLASS_DRIVER_ACTION_NONE)
         {
             // Call the client event handler function - no waiting
             usb_host_client_handle_events(driver_obj.client_hdl, pdMS_TO_TICKS(1));
         }
-        
+
         // Execute pending class driver actions
-        if (driver_obj.actions & CLASS_DRIVER_ACTION_OPEN_DEV) 
+        if (driver_obj.actions & CLASS_DRIVER_ACTION_OPEN_DEV)
         {
             ESP_LOGI(TAG, "Found USB device");
 
@@ -173,7 +172,7 @@ void class_driver_task(void *arg)
         {
             // read device info
             usb_host_device_info(driver_obj.dev_hdl, &dev_info);
-            
+
             ESP_LOGI(TAG, "\t%s speed", (dev_info.speed == USB_SPEED_LOW) ? "Low" : "Full");
             ESP_LOGI(TAG, "\tbConfigurationValue %d", dev_info.bConfigurationValue);
 
@@ -186,7 +185,7 @@ void class_driver_task(void *arg)
             //ESP_ERROR_CHECK(usb_host_get_active_config_descriptor(driver_obj.dev_hdl, &config_desc));
             //usb_print_config_descriptor(config_desc, NULL);
 
-            // check for IK Multimedia Vendor and Product ID 
+            // check for IK Multimedia Vendor and Product ID
             if ((dev_desc->idVendor == IK_MULTIMEDIA_USB_VENDOR) && (dev_desc->idProduct == TONEX_ONE_PRODUCT_ID))
             {
                 // found Tonex One
@@ -197,7 +196,7 @@ void class_driver_task(void *arg)
             }
             else if ((dev_desc->idVendor == IK_MULTIMEDIA_USB_VENDOR) && (dev_desc->idProduct == TONEX_PRODUCT_ID))
             {
-                // found Tonex 
+                // found Tonex
                 ESP_LOGI(TAG, "Found Tonex");
                 AmpModellerType = AMP_MODELLER_TONEX;
 
@@ -231,7 +230,7 @@ void class_driver_task(void *arg)
             driver_obj.actions &= ~CLASS_DRIVER_ACTION_READ_DEV;
         }
 
-        if (driver_obj.actions & CLASS_DRIVER_ACTION_CLOSE_DEV) 
+        if (driver_obj.actions & CLASS_DRIVER_ACTION_CLOSE_DEV)
         {
             ESP_LOGI(TAG, "USB close device");
 
@@ -240,7 +239,7 @@ void class_driver_task(void *arg)
             {
                 usb_host_interface_release(driver_obj.client_hdl, driver_obj.dev_hdl, 1);
             }
-            
+
             // clean up
             switch (AmpModellerType)
             {
@@ -297,7 +296,7 @@ void class_driver_task(void *arg)
             {
                 usb_valeton_gp5_handle(&driver_obj);
             } break;
-            
+
             default:
             {
                 // nothing needed
@@ -312,11 +311,11 @@ void class_driver_task(void *arg)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 #ifdef ENABLE_ENUM_FILTER_CALLBACK
 static bool set_config_cb(const usb_device_desc_t *dev_desc, uint8_t *bConfigurationValue)
@@ -334,11 +333,11 @@ static bool set_config_cb(const usb_device_desc_t *dev_desc, uint8_t *bConfigura
 #endif // ENABLE_ENUM_FILTER_CALLBACK
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void host_lib_daemon_task(void *arg)
 {
@@ -350,12 +349,12 @@ static void host_lib_daemon_task(void *arg)
 
     // delay here, as with the big Tonex (being self-powered) we need to give the ESP32 enough time
     // to initialise the USB port before we try to enumerate the bus
-    vTaskDelay(500); 
+    vTaskDelay(500);
 
     //Create the USB class driver task
     xTaskCreatePinnedToCore(class_driver_task,
                             "class",
-                            (3 * 1024), 
+                            (3 * 1024),
                             (void*)signaling_sem,
                             USB_CLASS_TASK_PRIORITY,
                             &class_driver_task_hdl,
@@ -372,19 +371,19 @@ static void host_lib_daemon_task(void *arg)
     err = usb_host_install(&host_config);
     if (err != ESP_OK)
     {
-        ESP_LOGI(TAG, "usb_host_install() failed!");   
+        ESP_LOGI(TAG, "usb_host_install() failed!");
     }
 
     // Signal to the class driver task that the host library is installed
     xSemaphoreGive(signaling_sem);
 
     //Short delay to let client task spin up
-    vTaskDelay(10); 
+    vTaskDelay(10);
 
-    while (1) 
+    while (1)
     {
         uint32_t event_flags;
-        
+
         err = usb_host_lib_handle_events(portMAX_DELAY, &event_flags);
 
         if (err != ESP_OK)
@@ -394,12 +393,12 @@ static void host_lib_daemon_task(void *arg)
         }
         else
         {
-            if (event_flags & USB_HOST_LIB_EVENT_FLAGS_NO_CLIENTS) 
+            if (event_flags & USB_HOST_LIB_EVENT_FLAGS_NO_CLIENTS)
             {
                 //has_clients = false;
             }
-            
-            if (event_flags & USB_HOST_LIB_EVENT_FLAGS_ALL_FREE) 
+
+            if (event_flags & USB_HOST_LIB_EVENT_FLAGS_ALL_FREE)
             {
                 //has_devices = false;
             }
@@ -410,11 +409,11 @@ static void host_lib_daemon_task(void *arg)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void usb_set_preset(uint32_t preset)
 {
@@ -422,7 +421,7 @@ void usb_set_preset(uint32_t preset)
 
     if (usb_input_queue == NULL)
     {
-        ESP_LOGE(TAG, "usb_set_preset queue null");            
+        ESP_LOGE(TAG, "usb_set_preset queue null");
     }
     else
     {
@@ -432,94 +431,7 @@ void usb_set_preset(uint32_t preset)
         // send to queue
         if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
         {
-            ESP_LOGE(TAG, "usb_set_preset queue send failed!");            
-        }
-    }
-}
-
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
-void usb_modify_parameter(uint16_t index, float value)
-{
-    tUSBMessage message;
-
-    ESP_LOGI(TAG, "usb_modify_parameter: %d, %f", (int)index, value);            
-
-    if (usb_input_queue == NULL)
-    {
-        ESP_LOGE(TAG, "usb_modify_parameter queue null");            
-    }
-    else
-    {
-        message.Command = USB_COMMAND_MODIFY_PARAMETER;
-        message.Payload = index;
-        message.PayloadFloat = value;
-
-        // send to queue
-        if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
-        {
-            ESP_LOGE(TAG, "usb_modify_parameter queue send failed!");            
-        }
-    }
-}
-
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
-void usb_load_preset_to_slot_a(uint32_t preset)
-{
-    tUSBMessage message;
-
-    if (usb_input_queue == NULL)
-    {
-        ESP_LOGE(TAG, "usb_load_preset_to_slot_a queue null");            
-    }
-    else
-    {
-        message.Command = USB_COMMAND_LOAD_PRESET_TO_SLOT_A;
-        message.Payload = preset;
-
-        // send to queue
-        if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
-        {
-            ESP_LOGE(TAG, "usb_load_preset_to_slot_a queue send failed!");            
-        }
-    }
-}
-
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
-void usb_load_preset_to_slot_b(uint32_t preset)
-{
-    tUSBMessage message;
-
-    if (usb_input_queue == NULL)
-    {
-        ESP_LOGE(TAG, "usb_load_preset_to_slot_b queue null");            
-    }
-    else
-    {
-        message.Command = USB_COMMAND_LOAD_PRESET_TO_SLOT_B;
-        message.Payload = preset;
-
-        // send to queue
-        if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
-        {
-            ESP_LOGE(TAG, "usb_load_preset_to_slot_b queue send failed!");            
+            ESP_LOGE(TAG, "usb_set_preset queue send failed!");
         }
     }
 }
@@ -530,7 +442,94 @@ void usb_load_preset_to_slot_b(uint32_t preset)
 * PARAMETERS:
 * RETURN:
 * NOTES:
-*****************************************************************************/  
+*****************************************************************************/
+void usb_modify_parameter(uint16_t index, float value)
+{
+    tUSBMessage message;
+
+    ESP_LOGI(TAG, "usb_modify_parameter: %d, %f", (int)index, value);
+
+    if (usb_input_queue == NULL)
+    {
+        ESP_LOGE(TAG, "usb_modify_parameter queue null");
+    }
+    else
+    {
+        message.Command = USB_COMMAND_MODIFY_PARAMETER;
+        message.Payload = index;
+        message.PayloadFloat = value;
+
+        // send to queue
+        if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
+        {
+            ESP_LOGE(TAG, "usb_modify_parameter queue send failed!");
+        }
+    }
+}
+
+/****************************************************************************
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
+*****************************************************************************/
+void usb_load_preset_to_slot_a(uint32_t preset)
+{
+    tUSBMessage message;
+
+    if (usb_input_queue == NULL)
+    {
+        ESP_LOGE(TAG, "usb_load_preset_to_slot_a queue null");
+    }
+    else
+    {
+        message.Command = USB_COMMAND_LOAD_PRESET_TO_SLOT_A;
+        message.Payload = preset;
+
+        // send to queue
+        if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
+        {
+            ESP_LOGE(TAG, "usb_load_preset_to_slot_a queue send failed!");
+        }
+    }
+}
+
+/****************************************************************************
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
+*****************************************************************************/
+void usb_load_preset_to_slot_b(uint32_t preset)
+{
+    tUSBMessage message;
+
+    if (usb_input_queue == NULL)
+    {
+        ESP_LOGE(TAG, "usb_load_preset_to_slot_b queue null");
+    }
+    else
+    {
+        message.Command = USB_COMMAND_LOAD_PRESET_TO_SLOT_B;
+        message.Payload = preset;
+
+        // send to queue
+        if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
+        {
+            ESP_LOGE(TAG, "usb_load_preset_to_slot_b queue send failed!");
+        }
+    }
+}
+
+/****************************************************************************
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
+*****************************************************************************/
 void usb_set_ab_slots(uint32_t preset_a, uint32_t preset_b)
 {
     tUSBMessage message;
@@ -553,11 +552,11 @@ void usb_set_ab_slots(uint32_t preset_a, uint32_t preset_b)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void usb_save_preset(void)
 {
@@ -565,7 +564,7 @@ void usb_save_preset(void)
 
     if (usb_input_queue == NULL)
     {
-        ESP_LOGE(TAG, "usb_save_preset queue null");            
+        ESP_LOGE(TAG, "usb_save_preset queue null");
     }
     else
     {
@@ -575,17 +574,17 @@ void usb_save_preset(void)
         // send to queue
         if (xQueueSend(usb_input_queue, (void*)&message, 0) != pdPASS)
         {
-            ESP_LOGE(TAG, "usb_save_preset queue send failed!");            
+            ESP_LOGE(TAG, "usb_save_preset queue send failed!");
         }
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t usb_get_max_presets_for_connected_modeller(void)
 {
@@ -601,7 +600,7 @@ uint8_t usb_get_max_presets_for_connected_modeller(void)
         {
             max = MAX_PRESETS_TONEX;
         } break;
-        
+
         case AMP_MODELLER_VALETON_GP5:
         {
             max = MAX_PRESETS_VALETON_GP5;
@@ -612,16 +611,16 @@ uint8_t usb_get_max_presets_for_connected_modeller(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t usb_get_first_preset_index_for_connected_modeller(void)
 {
     uint8_t first = 1;
-    
+
     switch (AmpModellerType)
     {
         case AMP_MODELLER_TONEX_ONE:
@@ -634,7 +633,7 @@ uint8_t usb_get_first_preset_index_for_connected_modeller(void)
             // big Tonex LCD uses 0-based indexing
             first = 0;
         } break;
-        
+
         case AMP_MODELLER_VALETON_GP5:
         {
             first = 0;
@@ -645,11 +644,11 @@ uint8_t usb_get_first_preset_index_for_connected_modeller(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t usb_get_connected_modeller_type(void)
 {
@@ -657,11 +656,11 @@ uint8_t usb_get_connected_modeller_type(void)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void init_usb_comms(void)
 {
@@ -681,7 +680,7 @@ void init_usb_comms(void)
     //Create USB daemon task
     xTaskCreatePinnedToCore(host_lib_daemon_task,
                             "daemon",
-                            (3 * 1024), 
+                            (3 * 1024),
                             (void*)signaling_sem,
                             USB_DAEMON_TASK_PRIORITY,
                             &daemon_task_hdl,

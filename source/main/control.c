@@ -41,7 +41,6 @@ limitations under the License.
 #include "footswitches.h"
 #include "task_priorities.h"
 #include "tonex_params.h"
-#include "valeton_params.h"
 #include "midi_helper.h"
 #include "leds.h"
 
