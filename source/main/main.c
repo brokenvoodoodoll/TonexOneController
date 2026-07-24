@@ -259,7 +259,6 @@ void app_main(void)
     // init parameters
     ESP_LOGI(TAG, "Init Params");
     tonex_params_init();
-    valeton_params_init();
 
     // init control task
     ESP_LOGI(TAG, "Init Control");

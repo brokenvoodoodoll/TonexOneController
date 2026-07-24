@@ -1180,9 +1180,6 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                         {
                             // signal to refresh param UI with Globals
                             // UI_RefreshParameterValues();
-
-                            // refresh the footswitch leds
-                            control_update_footswitch_leds();
                         }
                     }
                 } break;
@@ -1232,9 +1229,6 @@ static esp_err_t usb_tonex_one_process_single_message(uint8_t* data, uint16_t le
                         {
                             // signal to refresh param UI
                             // UI_RefreshParameterValues();
-
-                            // refresh the footswitch leds
-                            control_update_footswitch_leds();
                         }
 
                         if (boot_global_request)

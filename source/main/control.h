@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #pragma once
@@ -189,7 +189,7 @@ enum WiFiTxPower
 {
     WIFI_TX_POWER_25,
     WIFI_TX_POWER_50,
-    WIFI_TX_POWER_75,    
+    WIFI_TX_POWER_75,
     WIFI_TX_POWER_100
 };
 
@@ -205,21 +205,6 @@ enum ConfigTabs43BTonex
     CONFIG_TAB_GLOBAL,
 };
 
-enum ConfigTabs43BValeton
-{
-    CONFIG_TAB_VAL_NR,
-    CONFIG_TAB_VAL_PRE,
-    CONFIG_TAB_VAL_DST,
-    CONFIG_TAB_VAL_AMP,
-    CONFIG_TAB_VAL_CAB,
-    CONFIG_TAB_VAL_EQ,
-    CONFIG_TAB_VAL_MOD,
-    CONFIG_TAB_VAL_DLY,
-    CONFIG_TAB_VAL_RVB,
-    CONFIG_TAB_VAL_NS,
-    CONFIG_TAB_VAL_GLOBAL,
-};
-
 enum FootswitchLayouts
 {
     FOOTSWITCH_LAYOUT_1X2,                // next/previous
@@ -227,9 +212,9 @@ enum FootswitchLayouts
     FOOTSWITCH_LAYOUT_1X4,                // 1 row of 4 switches, bank via 1+2 and 3+4
     FOOTSWITCH_LAYOUT_1X5A,               // 1 row of 5 switches, bank via 1+2 and 4+5
     FOOTSWITCH_LAYOUT_1X5B,               // 1 row of 5 switches, bank via last 2
-    FOOTSWITCH_LAYOUT_1X6A,               // 1 row of 6 switches, bank via 1+2 and 5+6  
+    FOOTSWITCH_LAYOUT_1X6A,               // 1 row of 6 switches, bank via 1+2 and 5+6
     FOOTSWITCH_LAYOUT_1X6B,               // 1 row of 6 switches, bank via last 2
-    FOOTSWITCH_LAYOUT_1X7A,               // 1 row of 7 switches, bank via 1+2 and 6+7  
+    FOOTSWITCH_LAYOUT_1X7A,               // 1 row of 7 switches, bank via 1+2 and 6+7
     FOOTSWITCH_LAYOUT_1X7B,               // 1 row of 7 switches, bank via last 2
     FOOTSWITCH_LAYOUT_2X3,                // 2 row2 of 3 switches, bank via 1+2 and 2+3
     FOOTSWITCH_LAYOUT_2X4,                // 2 rows of 4 switches, bank via 1+2 and 3+4
@@ -237,7 +222,7 @@ enum FootswitchLayouts
     FOOTSWITCH_LAYOUT_2X5B,               // 2 rows of 5 switches, bank via last 2
     FOOTSWITCH_LAYOUT_2X6A,               // 2 rows of 6 switches, bank via 1+2 and 5+6
     FOOTSWITCH_LAYOUT_2X6B,               // 2 rows of 6 switches, bank via last 2
-    FOOTSWITCH_LAYOUT_1X4_BINARY,         // 4 bit binary 
+    FOOTSWITCH_LAYOUT_1X4_BINARY,         // 4 bit binary
     FOOTSWITCH_LAYOUT_LAST,
     FOOTSWITCH_LAYOUT_DISABLED = 0xFF
 };
@@ -286,7 +271,7 @@ typedef struct
     uint8_t Data3;  // usage depends on connected modeller
 } tModellerParameter;
 
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     uint8_t Switch;
     uint8_t CC;
@@ -294,14 +279,14 @@ typedef struct __attribute__ ((packed))
     uint8_t Value_2;
 } tExternalFootswitchEffectConfig;
 
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     uint8_t Red;
     uint8_t Blue;
     uint8_t Green;
 } tLedColour;
 
-#define MAX_WIFI_SSID_PW                        65   
+#define MAX_WIFI_SSID_PW                        65
 #define MAX_MDNS_NAME                           32
 #define MAX_EXTERNAL_EFFECT_FOOTSWITCHES        8
 #define MAX_INTERNAL_EFFECT_FOOTSWITCHES        4
@@ -309,7 +294,7 @@ typedef struct __attribute__ ((packed))
 #define MAX_SUPPORTED_PRESETS                   150
 #define MAX_PRESET_NAME_LENGTH                  33
 #define MAX_PC_MAP                              128 // 0 to 127, matches Midi values
-#define MAX_BT_PERIPHERAL_NAME                  25    
+#define MAX_BT_PERIPHERAL_NAME                  25
 
 // thread safe public API
 void control_request_preset_up(void);
@@ -337,7 +322,6 @@ void control_set_sync_complete(void);
 uint8_t control_get_sync_complete(void);
 uint32_t control_get_current_preset_index(void);
 void control_get_current_preset_name(char* dest);
-void control_update_footswitch_leds(void);
 esp_err_t control_get_connected_modeller_params_locked_access(tModellerParameter** param_ptr);
 esp_err_t control_release_connected_modeller_params_locked_access(void);
 

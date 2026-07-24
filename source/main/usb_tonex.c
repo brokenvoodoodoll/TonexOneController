@@ -647,12 +647,6 @@ static TonexStatus usb_tonex_parse_param_changed(uint8_t* unframed, uint16_t len
 
                 // signal to refresh param UI
                 // UI_RefreshParameterValues();
-
-                // update web UI
-
-
-                // refresh the footswitch leds
-                control_update_footswitch_leds();
             }
         }
         else
@@ -838,11 +832,6 @@ static TonexStatus usb_tonex_parse_global_config(uint8_t* unframed, uint16_t len
 
             // signal to refresh param UI
             // UI_RefreshParameterValues();
-
-            // update web UI
-
-            // refresh the footswitch leds
-            control_update_footswitch_leds();
         }
         else
         {
@@ -1056,12 +1045,6 @@ static esp_err_t usb_tonex_process_single_message(uint8_t* data, uint16_t length
                         {
                             // signal to refresh param UI with Globals
                             // UI_RefreshParameterValues();
-
-                            // update web UI
-
-
-                            // refresh the footswitch leds
-                            control_update_footswitch_leds();
                         }
                     }
                 } break;
@@ -1127,12 +1110,6 @@ static esp_err_t usb_tonex_process_single_message(uint8_t* data, uint16_t length
                         {
                             // signal to refresh param UI
                             // UI_RefreshParameterValues();
-
-                            // update web UI
-
-
-                            // refresh the footswitch leds
-                            control_update_footswitch_leds();
                         }
 
                         if (boot_global_request)

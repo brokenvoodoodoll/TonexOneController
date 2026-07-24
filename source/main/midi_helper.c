@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 
@@ -39,16 +39,15 @@ limitations under the License.
 #include "tonex_params.h"
 #include "midi_helper.h"
 #include "midi_helper_tonex.h"
-#include "midi_helper_valeton.h"
 
 static const char *TAG = "app_midi_helper";
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 float midi_helper_scale_midi_to_float(uint16_t param_index, uint8_t midi_value)
 {
@@ -63,11 +62,11 @@ float midi_helper_scale_midi_to_float(uint16_t param_index, uint8_t midi_value)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 float midi_helper_boolean_midi_to_float(uint8_t midi_value)
 {
@@ -82,11 +81,11 @@ float midi_helper_boolean_midi_to_float(uint8_t midi_value)
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t midi_helper_adjust_param_via_midi(uint8_t change_num, uint8_t midi_value)
 {
@@ -98,20 +97,15 @@ esp_err_t midi_helper_adjust_param_via_midi(uint8_t change_num, uint8_t midi_val
         {
             return midi_helper_tonex_adjust_param_via_midi(change_num, midi_value);
         } break;
-
-        case AMP_MODELLER_VALETON_GP5:
-        {
-            return midi_helper_valeton_adjust_param_via_midi(change_num, midi_value);
-        } break;
     }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint16_t midi_helper_get_param_for_change_num(uint8_t change_num, uint8_t midi_value_1, uint8_t midi_value_2)
 {
@@ -123,20 +117,15 @@ uint16_t midi_helper_get_param_for_change_num(uint8_t change_num, uint8_t midi_v
         {
             return midi_helper_tonex_get_param_for_change_num(change_num, midi_value_1, midi_value_2);
         } break;
-
-        case AMP_MODELLER_VALETON_GP5:
-        {
-            return midi_helper_valeton_get_param_for_change_num(change_num, midi_value_1, midi_value_2);
-        } break;
-    }    
+    }
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint8_t midi_helper_process_incoming_data(uint8_t* data, uint8_t length, uint8_t midi_channel, uint8_t enable_CC)
 {
@@ -204,7 +193,7 @@ uint8_t midi_helper_process_incoming_data(uint8_t* data, uint8_t length, uint8_t
                     uint8_t map_val = control_get_pc_map()[*ptr];
 
                     // set preset
-                    control_request_preset_index(map_val); 
+                    control_request_preset_index(map_val);
                 }
 
                 ptr++;
@@ -218,7 +207,7 @@ uint8_t midi_helper_process_incoming_data(uint8_t* data, uint8_t length, uint8_t
                 uint8_t value = *ptr++;
                 bytes_processed += 2;
 
-                if (enable_CC && (channel == midi_channel)) 
+                if (enable_CC && (channel == midi_channel))
                 {
                     midi_helper_adjust_param_via_midi(change_num, value);
                 }
@@ -238,7 +227,7 @@ uint8_t midi_helper_process_incoming_data(uint8_t* data, uint8_t length, uint8_t
                         uint8_t value = *ptr++;
                         bytes_processed += 2;
 
-                        if (enable_CC && (channel == midi_channel)) 
+                        if (enable_CC && (channel == midi_channel))
                         {
                             midi_helper_adjust_param_via_midi(change_num, value);
                         }
