@@ -9,10 +9,8 @@ idf_component_register(SRCS
                        "usb_tonex.c"
                        "midi_helper.c"
                        "midi_helper_tonex.c"
-                       "platform_devkitc.c"
-                       "platform_wszero.c"
                        INCLUDE_DIRS "." "./"
-                       REQUIRES bt nvs_flash console usb fatfs app_update usb_host_midi esp_http_server
+                       REQUIRES usb nvs_flash driver
 )
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Werror)

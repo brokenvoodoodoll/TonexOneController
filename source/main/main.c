@@ -23,33 +23,21 @@ limitations under the License.
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
-#include "esp_timer.h"
-#include "esp_lcd_panel_ops.h"
-#include "esp_lcd_panel_rgb.h"
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "driver/uart.h"
 #include "driver/gpio.h"
-#include "lvgl.h"
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "esp_ota_ops.h"
 #include "sys/param.h"
-#include "esp_wifi.h"
 #include "esp_log.h"
 #include "esp_mac.h"
 #include "esp_crc.h"
-#include "esp_now.h"
 #include "driver/i2c_master.h"
 #include "esp_intr_alloc.h"
 #include "usb/usb_host.h"
 #include "esp_private/periph_ctrl.h"
-#include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
 
 #include "main.h"
@@ -60,7 +48,6 @@ limitations under the License.
 #include "footswitches.h"
 #include "control.h"
 #include "tonex_params.h"
-#include "platform_common.h"
 
 #define I2C_MASTER_FREQ_HZ              400000      /*!< I2C master clock frequency */
 #define I2C_MASTER_TX_BUF_DISABLE       0           /*!< I2C master doesn't need buffer */
@@ -73,7 +60,6 @@ static const char *TAG = "app_main";
 
 __attribute__((unused)) SemaphoreHandle_t I2CMutex_1;
 __attribute__((unused)) SemaphoreHandle_t I2CMutex_2;
-static __attribute__((unused)) lv_disp_drv_t disp_drv;
 static __attribute__((unused)) i2c_master_bus_handle_t ic2_bus_handle_1;
 static __attribute__((unused)) i2c_master_bus_handle_t ic2_bus_handle_2;
 
@@ -166,58 +152,6 @@ static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t p
 * NAME:
 * DESCRIPTION:
 * PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
-static __attribute__((unused)) void list_files(const char *path)
-{
-    DIR *dir = opendir(path);
-    if (dir == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to open directory: %s", path);
-        return;
-    }
-
-    struct dirent *entry;
-    ESP_LOGI(TAG, "Listing files in directory: %s", path);
-
-    while ((entry = readdir(dir)) != NULL)
-    {
-        // Skip "." and ".." entries
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-        {
-            continue;
-        }
-
-        char full_path[300];
-        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
-
-        // Get file information
-        struct stat stat_buf;
-        if (stat(full_path, &stat_buf) == 0)
-        {
-            if (S_ISDIR(stat_buf.st_mode))
-            {
-                ESP_LOGI(TAG, "[DIR]  %s", entry->d_name);
-            }
-            else
-            {
-                ESP_LOGI(TAG, "[FILE] %s (%ld bytes)", entry->d_name, stat_buf.st_size);
-            }
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to stat %s", entry->d_name);
-        }
-    }
-
-    closedir(dir);
-}
-
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
 * RETURN:
 * NOTES:
 *****************************************************************************/
@@ -258,10 +192,6 @@ void app_main(void)
     // init control task
     ESP_LOGI(TAG, "Init Control");
     control_init();
-
-    // init platform
-    ESP_LOGI(TAG, "Init Platform");
-    platform_init(ic2_bus_handle_1, I2CMutex_1, &disp_drv);
 
     // init display
     // ESP_LOGI(TAG, "Init Display");

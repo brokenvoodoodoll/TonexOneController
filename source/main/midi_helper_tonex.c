@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 
@@ -28,9 +28,6 @@ limitations under the License.
 #include "usb/usb_host.h"
 #include "driver/i2c.h"
 #include "nvs_flash.h"
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "esp_ota_ops.h"
 #include "sys/param.h"
 #include "control.h"
 #include "usb_comms.h"
@@ -43,11 +40,11 @@ limitations under the License.
 static const char *TAG = "app_midi_helper_tonex";
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static uint8_t midi_helper_tonex_boolean_midi_toggle(uint16_t param, uint8_t midi_value, float* value)
 {
@@ -57,7 +54,7 @@ static uint8_t midi_helper_tonex_boolean_midi_toggle(uint16_t param, uint8_t mid
     {
         // take mutex
         if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-        {		
+        {
             // toggle current state
             if (param_ptr[param].Value == 0.0f)
             {
@@ -66,12 +63,12 @@ static uint8_t midi_helper_tonex_boolean_midi_toggle(uint16_t param, uint8_t mid
             else
             {
                 *value = 0.0f;
-            }  
-                
+            }
+
             // release mutex
             tonex_params_release_locked_access();
-        }  
-        
+        }
+
         // toggling
         return 1;
     }
@@ -81,11 +78,11 @@ static uint8_t midi_helper_tonex_boolean_midi_toggle(uint16_t param, uint8_t mid
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t midi_value)
 {
@@ -100,8 +97,8 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
         case 1:
         {
-            param = TONEX_PARAM_DELAY_POST;  
-            
+            param = TONEX_PARAM_DELAY_POST;
+
             // check for toggling
             if (!midi_helper_tonex_boolean_midi_toggle(param, midi_value, &value))
             {
@@ -127,7 +124,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             param = TONEX_PARAM_DELAY_MODEL;
             value = (float)midi_value;
             value = tonex_params_clamp_value(param, value);
-        } break;        
+        } break;
 
         case 4:
         {
@@ -145,7 +142,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_DELAY_DIGITAL_SYNC].Value == 0.00f)
                 {
                     ESP_LOGW(TAG, "TONEX_PARAM_DELAY_DIGITAL_TIME");
@@ -170,8 +167,8 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
@@ -189,7 +186,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         } break;
 
         case 7:
-        { 
+        {
             param = TONEX_PARAM_DELAY_DIGITAL_MODE;
             if (midi_value == 64)
             {
@@ -200,8 +197,8 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
                 value = 0.0f;
             }
             value = tonex_params_clamp_value(param, value);
-        } break;        
-        
+        } break;
+
         case 8:
         {
             param = TONEX_PARAM_DELAY_DIGITAL_MIX;
@@ -210,19 +207,19 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         } break;
 
         // 9 tuner
-        
-        case 10: 
+
+        case 10:
         {
             //tap tempo
             control_trigger_tap_tempo();
-            
+
             // no param change needed
             return ESP_OK;
         } break;
 
         // 11: expression pedal
-        
-        case 12: 
+
+        case 12:
         {
             //preset on/off
             param = TONEX_GLOBAL_BYPASS;
@@ -234,7 +231,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
                 value = tonex_params_clamp_value(param, value);
             }
         } break;
-        
+
         case 13:
         {
             param = TONEX_PARAM_NOISE_GATE_POST;
@@ -292,8 +289,8 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             }
         } break;
 
-        case 19:             
-        { 
+        case 19:
+        {
             param = TONEX_PARAM_COMP_THRESHOLD;
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
@@ -393,7 +390,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         } break;
 
         case 32:
-        {       
+        {
             param = TONEX_PARAM_MODULATION_ENABLE;
 
             // check for toggling
@@ -427,7 +424,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_CHORUS_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_CHORUS_RATE;
@@ -448,14 +445,14 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
                 // failed to get access to params
                 return ESP_FAIL;
-            }            
+            }
         } break;
 
         case 36:
@@ -483,7 +480,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_TREMOLO_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_TREMOLO_RATE;
@@ -504,14 +501,14 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
                 // failed to get access to params
                 return ESP_FAIL;
-            }            
+            }
         } break;
 
         case 40:
@@ -551,7 +548,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_PHASER_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_PHASER_RATE;
@@ -572,14 +569,14 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
                 // failed to get access to params
                 return ESP_FAIL;
-            }            
+            }
         } break;
 
         case 45:
@@ -612,7 +609,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_FLANGER_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_FLANGER_RATE;
@@ -633,14 +630,14 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
                 // failed to get access to params
                 return ESP_FAIL;
-            }            
+            }
         } break;
 
         case 49:
@@ -680,7 +677,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_ROTARY_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_ROTARY_SPEED;
@@ -701,8 +698,8 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
@@ -710,7 +707,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
                 return ESP_FAIL;
             }
         } break;
-        
+
         case 54:
         {
             param = TONEX_PARAM_MODULATION_ROTARY_RADIUS;
@@ -734,7 +731,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
         // 57 - 58 not used
 
-        case 59: 
+        case 59:
         {
             param = TONEX_PARAM_REVERB_SPRING1_TIME;
             value = midi_helper_scale_midi_to_float(param, midi_value);
@@ -879,7 +876,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             value = tonex_params_clamp_value(param, value);
         } break;
 
-        case 79: 
+        case 79:
         {
             param = TONEX_PARAM_REVERB_PLATE_MIX;
             value = midi_helper_scale_midi_to_float(param, midi_value);
@@ -933,7 +930,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             value = tonex_params_clamp_value(param, value);
         } break;
 
-        case 86: 
+        case 86:
         {
             //preset down
             control_request_preset_down();
@@ -951,13 +948,13 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             return ESP_OK;
         } break;
 
-        case 88: 
+        case 88:
         {
             // bpm
-            param = TONEX_GLOBAL_BPM;            
+            param = TONEX_GLOBAL_BPM;
             value = midi_helper_scale_midi_to_float(param, midi_value);
         } break;
-        
+
         case 89:
         {
             // A/B slot bank down
@@ -965,7 +962,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
             return ESP_OK;
         } break;
-        
+
         case 90:
         {
             // A/B slot bank up
@@ -990,7 +987,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_DELAY_TAPE_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_DELAY_TAPE_TIME;
@@ -1011,8 +1008,8 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 
                     // set the time sign
                     value = (float)midi_value;
-                    value = tonex_params_clamp_value(param, value);        
-                }                                                   
+                    value = tonex_params_clamp_value(param, value);
+                }
             }
             else
             {
@@ -1022,7 +1019,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         } break;
 
         case 93:
-        {    
+        {
             param = TONEX_PARAM_DELAY_TAPE_FEEDBACK;
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
@@ -1049,19 +1046,19 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             value = tonex_params_clamp_value(param, value);
         } break;
 
-        // 96 to 101 not used       
+        // 96 to 101 not used
 
-        case 99: 
+        case 99:
         {
             // bpm
-            param = TONEX_GLOBAL_BPM; 
+            param = TONEX_GLOBAL_BPM;
             value = (midi_value < 40) ? 40 : midi_value;
         } break;
-        
-        case 100: 
+
+        case 100:
         {
             // bpm
-            param = TONEX_GLOBAL_BPM;            
+            param = TONEX_GLOBAL_BPM;
             value = midi_value+100;
         } break;
 
@@ -1078,7 +1075,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
         } break;
-        
+
         case 104:
         {
             param = TONEX_PARAM_MODEX_MIX;
@@ -1096,7 +1093,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         } break;
 
         case 107:
-        { 
+        {
             param = TONEX_PARAM_MODEL_DEPTH;
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
@@ -1157,17 +1154,17 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
         } break;
-     
+
         // below items not supported on bigger Tonex pedal, custom for this controller
-        case 116: 
+        case 116:
         {
             // input trim
-            param = TONEX_GLOBAL_INPUT_TRIM;            
+            param = TONEX_GLOBAL_INPUT_TRIM;
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
         } break;
 
-        case 117: 
+        case 117:
         {
             param = TONEX_GLOBAL_CABSIM_BYPASS;
 
@@ -1178,11 +1175,11 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
                 value = tonex_params_clamp_value(param, value);
             }
         } break;
-        
+
         case 118:
         {
             param = TONEX_GLOBAL_TEMPO_SOURCE;
-            
+
             // check for toggling
             if (!midi_helper_tonex_boolean_midi_toggle(param, midi_value, &value))
             {
@@ -1231,20 +1228,20 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
         } break;
 
         case 122:
-        {            
+        {
             param = TONEX_GLOBAL_MASTER_VOLUME;
             value = midi_helper_scale_midi_to_float(param, midi_value);
             value = tonex_params_clamp_value(param, value);
         } break;
 
-        case 127: 
+        case 127:
         {
             // Custom case: use CC to change params.
-            if (midi_value >= (usb_get_max_presets_for_connected_modeller())) 
+            if (midi_value >= (usb_get_max_presets_for_connected_modeller()))
             {
                 ESP_LOGW(TAG, "Unsupported Midi CC 127 value %d", midi_value);
-            } 
-            else 
+            }
+            else
             {
                 control_request_preset_index(midi_value);
             }
@@ -1267,11 +1264,11 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t midi_value_1, uint8_t midi_value_2)
 {
@@ -1285,7 +1282,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
 
         case 1:
         {
-            param = TONEX_PARAM_DELAY_POST;       
+            param = TONEX_PARAM_DELAY_POST;
         } break;
 
         case 2:
@@ -1296,7 +1293,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         case 3:
         {
             param = TONEX_PARAM_DELAY_MODEL;
-        } break;        
+        } break;
 
         case 4:
         {
@@ -1307,7 +1304,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_DELAY_DIGITAL_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_DELAY_DIGITAL_TIME;
@@ -1315,8 +1312,8 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_DELAY_DIGITAL_TS;
-                }  
-                 
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
             }
@@ -1328,26 +1325,26 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         } break;
 
         case 7:
-        { 
+        {
             param = TONEX_PARAM_DELAY_DIGITAL_MODE;
-        } break;        
-        
+        } break;
+
         case 8:
         {
             param = TONEX_PARAM_DELAY_DIGITAL_MIX;
         } break;
 
         // 9 tuner
-        
-        case 10: 
+
+        case 10:
         {
             // BPM
             param = TONEX_GLOBAL_BPM;
         } break;
 
         // 11: expression pedal
-        
-        case 12: 
+
+        case 12:
         {
             // preset on/off
             param = TONEX_GLOBAL_BYPASS;
@@ -1383,8 +1380,8 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
             param = TONEX_PARAM_COMP_ENABLE;
         } break;
 
-        case 19:             
-        { 
+        case 19:
+        {
             param = TONEX_PARAM_COMP_THRESHOLD;
         } break;
 
@@ -1449,7 +1446,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         } break;
 
         case 32:
-        {       
+        {
             param = TONEX_PARAM_MODULATION_ENABLE;
         } break;
 
@@ -1467,7 +1464,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_CHORUS_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_CHORUS_RATE;
@@ -1475,11 +1472,11 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_MODULATION_CHORUS_TS;
-                }  
-                    
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
-            }            
+            }
         } break;
 
         case 36:
@@ -1501,7 +1498,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_TREMOLO_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_TREMOLO_RATE;
@@ -1509,11 +1506,11 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_MODULATION_TREMOLO_TS;
-                }  
-                    
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
-            }            
+            }
         } break;
 
         case 40:
@@ -1540,7 +1537,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_PHASER_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_PHASER_RATE;
@@ -1548,11 +1545,11 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_MODULATION_PHASER_TS;
-                }  
-                    
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
-            }            
+            }
         } break;
 
         case 45:
@@ -1574,7 +1571,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_FLANGER_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_FLANGER_RATE;
@@ -1582,11 +1579,11 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_MODULATION_FLANGER_TS;
-                }  
-                    
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
-            }            
+            }
         } break;
 
         case 49:
@@ -1613,7 +1610,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_MODULATION_ROTARY_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_MODULATION_ROTARY_SPEED;
@@ -1621,13 +1618,13 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_MODULATION_ROTARY_TS;
-                }  
-                    
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
-            }            
+            }
         } break;
-        
+
         case 54:
         {
             param = TONEX_PARAM_MODULATION_ROTARY_RADIUS;
@@ -1645,7 +1642,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
 
         // 57 - 58 not used
 
-        case 59: 
+        case 59:
         {
             param = TONEX_PARAM_REVERB_SPRING1_TIME;
         } break;
@@ -1745,7 +1742,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
             param = TONEX_PARAM_REVERB_PLATE_COLOR;
         } break;
 
-        case 79: 
+        case 79:
         {
             param = TONEX_PARAM_REVERB_PLATE_MIX;
         } break;
@@ -1780,7 +1777,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
             param = TONEX_PARAM_REVERB_MODEL;
         } break;
 
-        case 86: 
+        case 86:
         {
             // preset down
             control_request_preset_down();
@@ -1796,14 +1793,14 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
             // don't set any return param, as this one is already handled and its not a parameter
         } break;
 
-        case 88: 
+        case 88:
         {
             //bpm
             param = TONEX_GLOBAL_BPM;
         } break;
 
         // 89: bank down
-        // 90: bank up    
+        // 90: bank up
 
         case 91:
         {
@@ -1814,7 +1811,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             // take mutex
             if (tonex_params_get_locked_access(&param_ptr) == ESP_OK)
-            {		
+            {
                 if (param_ptr[TONEX_PARAM_DELAY_TAPE_SYNC].Value == 0.00f)
                 {
                     param = TONEX_PARAM_DELAY_TAPE_TIME;
@@ -1822,15 +1819,15 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 else
                 {
                     param = TONEX_PARAM_DELAY_TAPE_TS;
-                }  
-                    
+                }
+
                 // release mutex
                 tonex_params_release_locked_access();
-            }            
+            }
         } break;
 
         case 93:
-        {    
+        {
             param = TONEX_PARAM_DELAY_TAPE_FEEDBACK;
         } break;
 
@@ -1844,7 +1841,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
             param = TONEX_PARAM_DELAY_TAPE_MIX;
         } break;
 
-        // 96 to 101 not used       
+        // 96 to 101 not used
 
         case 102:
         {
@@ -1855,7 +1852,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         {
             param = TONEX_PARAM_MODEL_VOLUME;
         } break;
-        
+
         case 104:
         {
             param = TONEX_PARAM_MODEX_MIX;
@@ -1864,12 +1861,12 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         // 105 not used
 
         case 106:
-        {        
+        {
             param = TONEX_PARAM_MODEL_PRESENCE;
         } break;
 
         case 107:
-        { 
+        {
             param = TONEX_PARAM_MODEL_DEPTH;
         } break;
 
@@ -1914,21 +1911,21 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         } break;
 
         // below items not supported on bigger Tonex pedal, custom for this controller
-        case 116: 
+        case 116:
         {
-            param = TONEX_GLOBAL_INPUT_TRIM;            
+            param = TONEX_GLOBAL_INPUT_TRIM;
         } break;
 
-        case 117: 
+        case 117:
         {
             param = TONEX_GLOBAL_CABSIM_BYPASS;
         } break;
-         
+
         case 118:
         {
             param = TONEX_GLOBAL_TEMPO_SOURCE;
         } break;
- 
+
         case 119:
         {
             param = TONEX_GLOBAL_TUNING_REFERENCE;
@@ -1945,7 +1942,7 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
         } break;
 
         case 122:
-        {            
+        {
             param = TONEX_GLOBAL_MASTER_VOLUME;
         } break;
 
@@ -1965,11 +1962,11 @@ uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t 
                 new_preset = midi_value_1;
             }
 
-            if (new_preset >= (usb_get_max_presets_for_connected_modeller())) 
+            if (new_preset >= (usb_get_max_presets_for_connected_modeller()))
             {
                 ESP_LOGW(TAG, "Unsupported Midi CC 127 value %d", new_preset);
-            } 
-            else 
+            }
+            else
             {
                 control_request_preset_index(new_preset);
             }
