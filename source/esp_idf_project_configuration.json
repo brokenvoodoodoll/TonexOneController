@@ -32,7 +32,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_ws169land",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.ws169land"        
+        "sdkconfig.ws169land"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_ws169land"
     },
@@ -82,7 +82,7 @@
       "compileArgs": [],
       "ninjaArgs": [],
       "buildDirectoryPath": "${workspaceFolder}/build_ws169tland",
-      "sdkconfigDefaults": [        
+      "sdkconfigDefaults": [
         "sdkconfig.defaults",
         "sdkconfig.ws169tland"
       ],
@@ -134,7 +134,7 @@
       "compileArgs": [],
       "ninjaArgs": [],
       "buildDirectoryPath": "${workspaceFolder}/build_ws35b",
-      "sdkconfigDefaults": [        
+      "sdkconfigDefaults": [
         "sdkconfig.defaults",
         "sdkconfig.ws35b"
       ],
@@ -162,7 +162,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_jc3248w",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.jc3248w"        
+        "sdkconfig.jc3248w"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_jc3248w"
     },
@@ -290,7 +290,7 @@
       "compileArgs": [],
       "ninjaArgs": [],
       "buildDirectoryPath": "${workspaceFolder}/build_lgtdisps3",
-      "sdkconfigDefaults": [        
+      "sdkconfigDefaults": [
         "sdkconfig.defaults",
         "sdkconfig.lgtdisps3"
       ],
@@ -318,7 +318,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_ws19t",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.ws19t"        
+        "sdkconfig.ws19t"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_ws19t"
     },
@@ -344,7 +344,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_ws7_43",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.ws43devonly"        
+        "sdkconfig.ws43devonly"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_ws7_43"
     },
@@ -370,7 +370,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_pirate169",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.pirate169"        
+        "sdkconfig.pirate169"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_pirate169"
     },
@@ -396,7 +396,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_pirate169land",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.pirate169land"        
+        "sdkconfig.pirate169land"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_pirate169land"
     },
@@ -422,7 +422,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_piratezero",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.piratezero"        
+        "sdkconfig.piratezero"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_piratezero"
     },
@@ -448,7 +448,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_pirate43B",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.pirate43B"        
+        "sdkconfig.pirate43B"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_pirate43B"
     },
@@ -474,7 +474,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_pirateminiv2",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.pirateminiv2"        
+        "sdkconfig.pirateminiv2"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_pirateminiv2"
     },
@@ -500,7 +500,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_pirateplusv2",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.pirateplusv2"        
+        "sdkconfig.pirateplusv2"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_pirateplusv2"
     },
@@ -526,7 +526,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_piratepro",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.piratepro"        
+        "sdkconfig.piratepro"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_piratepro"
     },
@@ -552,7 +552,7 @@
       "buildDirectoryPath": "${workspaceFolder}/build_piratemax35",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.piratemax35"        
+        "sdkconfig.piratemax35"
       ],
       "sdkconfigFilePath": "${workspaceFolder}/build_piratemax35"
     },
@@ -571,16 +571,16 @@
       "postFlash": ""
     }
   },
-  "ESP32S3": {
+  "SUPERMINI": {
     "build": {
       "compileArgs": [],
       "ninjaArgs": [],
-      "buildDirectoryPath": "${workspaceFolder}/build_esp32s3",
+      "buildDirectoryPath": "${workspaceFolder}/build_supermini",
       "sdkconfigDefaults": [
         "sdkconfig.defaults",
-        "sdkconfig.esp32s3"        
+        "sdkconfig.supermini"
       ],
-      "sdkconfigFilePath": "${workspaceFolder}/build_esp32s3"
+      "sdkconfigFilePath": "${workspaceFolder}/build_supermini"
     },
     "env": {},
     "flashBaudRate": "",
