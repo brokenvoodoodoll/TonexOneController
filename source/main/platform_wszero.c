@@ -56,7 +56,6 @@ limitations under the License.
 #include "esp_lcd_sh8601.h"
 #include "esp_intr_alloc.h"
 #include "main.h"
-#include "CH422G.h"
 #include "control.h"
 #include "task_priorities.h"
 #include "tonex_params.h"

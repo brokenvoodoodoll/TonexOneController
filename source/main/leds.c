@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdio.h>
@@ -34,7 +34,6 @@ limitations under the License.
 #include "driver/i2c_master.h"
 #include "driver/rmt_tx.h"
 #include "main.h"
-#include "CH422G.h"
 #include "control.h"
 #include "task_priorities.h"
 #include "usb/usb_host.h"
@@ -54,12 +53,12 @@ enum LedStates
     LED_STATE_IDLE
 };
 
-typedef struct 
+typedef struct
 {
     uint32_t resolution; /*!< Encoder resolution, in Hz */
 } led_strip_encoder_config_t;
 
-typedef struct 
+typedef struct
 {
     rmt_encoder_t base;
     rmt_encoder_t *bytes_encoder;
@@ -68,17 +67,17 @@ typedef struct
     rmt_symbol_word_t reset_code;
 } rmt_led_strip_encoder_t;
 
-typedef struct __attribute__ ((packed)) 
+typedef struct __attribute__ ((packed))
 {
     uint8_t Byte_1;
     uint8_t Byte_2;
     uint8_t Byte_3;
 } tLedColourRaw;
 
-typedef struct 
+typedef struct
 {
-    uint8_t state; 
-    uint8_t queued_state; 
+    uint8_t state;
+    uint8_t queued_state;
     uint32_t timer;
     uint32_t counter;
 
@@ -88,7 +87,7 @@ typedef struct
     rmt_transmit_config_t tx_config;
 } tLedControl;
 
-typedef struct __attribute__ ((packed))  
+typedef struct __attribute__ ((packed))
 {
     uint16_t led_flags;
     tLedColour colour;
@@ -100,10 +99,10 @@ static tLedControl LedControl;
 static QueueHandle_t led_input_queue;
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
 * NOTES:       Wiki: https://en.wikipedia.org/wiki/HSL_and_HSV
 *****************************************************************************/
 static void __attribute__((unused)) led_strip_hsv2rgb(uint32_t h, uint32_t s, uint32_t v, uint32_t *r, uint32_t *g, uint32_t *b)
@@ -118,7 +117,7 @@ static void __attribute__((unused)) led_strip_hsv2rgb(uint32_t h, uint32_t s, ui
     // RGB adjustment amount by hue
     uint32_t rgb_adj = (rgb_max - rgb_min) * diff / 60;
 
-    switch (i) 
+    switch (i)
     {
         case 0:
             *r = rgb_max;
@@ -159,11 +158,11 @@ static void __attribute__((unused)) led_strip_hsv2rgb(uint32_t h, uint32_t s, ui
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static size_t __attribute__((unused)) rmt_encode_led_strip(rmt_encoder_t *encoder, rmt_channel_handle_t channel, const void *primary_data, size_t data_size, rmt_encode_state_t *ret_state)
 {
@@ -173,17 +172,17 @@ static size_t __attribute__((unused)) rmt_encode_led_strip(rmt_encoder_t *encode
     rmt_encode_state_t session_state = 0;
     rmt_encode_state_t state = 0;
     size_t encoded_symbols = 0;
-    
-    switch (led_encoder->state) 
+
+    switch (led_encoder->state)
     {
         case 0: // send RGB data
             encoded_symbols += bytes_encoder->encode(bytes_encoder, channel, primary_data, data_size, &session_state);
-            if (session_state & RMT_ENCODING_COMPLETE) 
+            if (session_state & RMT_ENCODING_COMPLETE)
             {
                 led_encoder->state = 1; // switch to next state when current encoding session finished
             }
-            
-            if (session_state & RMT_ENCODING_MEM_FULL) 
+
+            if (session_state & RMT_ENCODING_MEM_FULL)
             {
                 state |= RMT_ENCODING_MEM_FULL;
                 goto out; // yield if there's no free space for encoding artifacts
@@ -192,13 +191,13 @@ static size_t __attribute__((unused)) rmt_encode_led_strip(rmt_encoder_t *encode
         // fall-through
         case 1: // send reset code
             encoded_symbols += copy_encoder->encode(copy_encoder, channel, &led_encoder->reset_code, sizeof(led_encoder->reset_code), &session_state);
-            if (session_state & RMT_ENCODING_COMPLETE) 
+            if (session_state & RMT_ENCODING_COMPLETE)
             {
                 led_encoder->state = 0; // back to the initial encoding session
                 state |= RMT_ENCODING_COMPLETE;
             }
-            
-            if (session_state & RMT_ENCODING_MEM_FULL) 
+
+            if (session_state & RMT_ENCODING_MEM_FULL)
             {
                 state |= RMT_ENCODING_MEM_FULL;
                 goto out; // yield if there's no free space for encoding artifacts
@@ -211,11 +210,11 @@ out:
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t __attribute__((unused)) rmt_del_led_strip_encoder(rmt_encoder_t *encoder)
 {
@@ -228,11 +227,11 @@ static esp_err_t __attribute__((unused)) rmt_del_led_strip_encoder(rmt_encoder_t
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static esp_err_t __attribute__((unused)) rmt_led_strip_encoder_reset(rmt_encoder_t *encoder)
 {
@@ -245,30 +244,30 @@ static esp_err_t __attribute__((unused)) rmt_led_strip_encoder_reset(rmt_encoder
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 esp_err_t __attribute__((unused)) rmt_new_led_strip_encoder(const led_strip_encoder_config_t *config, rmt_encoder_handle_t *ret_encoder)
 {
     esp_err_t ret = ESP_OK;
     rmt_led_strip_encoder_t *led_encoder = NULL;
-    
+
     if ((config == NULL) || (ret_encoder == NULL))
     {
         ESP_LOGE(TAG, "Invalid arg");
         goto err;
     }
-    
-    led_encoder = calloc(1, sizeof(rmt_led_strip_encoder_t));    
+
+    led_encoder = calloc(1, sizeof(rmt_led_strip_encoder_t));
     if (led_encoder == NULL)
     {
         ESP_LOGE(TAG, "no mem for led strip encoder");
         goto err;
     }
-    
+
     led_encoder->base.encode = rmt_encode_led_strip;
     led_encoder->base.del = rmt_del_led_strip_encoder;
     led_encoder->base.reset = rmt_led_strip_encoder_reset;
@@ -281,7 +280,7 @@ esp_err_t __attribute__((unused)) rmt_new_led_strip_encoder(const led_strip_enco
             .level1 = 0,
             .duration1 = 0.9 * config->resolution / 1000000, // T0L=0.9us
         },
-#if CONFIG_TONEX_CONTROLLER_LED_WS2812        
+#if CONFIG_TONEX_CONTROLLER_LED_WS2812
         .bit1 = {
             .level0 = 1,
             .duration0 = 0.9 * config->resolution / 1000000, // T1H=0.9us
@@ -290,7 +289,7 @@ esp_err_t __attribute__((unused)) rmt_new_led_strip_encoder(const led_strip_enco
         },
 #endif
 
-#if CONFIG_TONEX_CONTROLLER_LED_SK6812        
+#if CONFIG_TONEX_CONTROLLER_LED_SK6812
         .bit1 = {
             .level0 = 1,
             .duration0 = 0.6 * config->resolution / 1000000, // T1H=0.6us
@@ -300,7 +299,7 @@ esp_err_t __attribute__((unused)) rmt_new_led_strip_encoder(const led_strip_enco
 #endif
         .flags.msb_first = 1 // WS2812 transfer bit order: G7...G0R7...R0B7...B0
     };
-    
+
     if (rmt_new_bytes_encoder(&bytes_encoder_config, &led_encoder->bytes_encoder) != ESP_OK)
     {
         ESP_LOGE(TAG, "create bytes encoder failed");
@@ -325,13 +324,13 @@ esp_err_t __attribute__((unused)) rmt_new_led_strip_encoder(const led_strip_enco
     return ESP_OK;
 
 err:
-    if (led_encoder) 
+    if (led_encoder)
     {
-        if (led_encoder->bytes_encoder) 
+        if (led_encoder->bytes_encoder)
         {
             rmt_del_encoder(led_encoder->bytes_encoder);
         }
-        if (led_encoder->copy_encoder) 
+        if (led_encoder->copy_encoder)
         {
             rmt_del_encoder(led_encoder->copy_encoder);
         }
@@ -342,16 +341,16 @@ err:
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 static void leds_set_raw_data_from_colour(uint8_t led, tLedColour* colour)
 {
-    // perform mapping 
-    uint8_t physical_led = leds_get_physical_index_for_virtual_index(led); 
+    // perform mapping
+    uint8_t physical_led = leds_get_physical_index_for_virtual_index(led);
 
     if (physical_led >= CONFIG_TONEX_CONTROLLER_LED_NUMBER)
     {
@@ -364,7 +363,7 @@ static void leds_set_raw_data_from_colour(uint8_t led, tLedColour* colour)
     LedControl.led_strip_pixels[physical_led].Byte_1 = colour->Green;
     LedControl.led_strip_pixels[physical_led].Byte_2 = colour->Blue;
     LedControl.led_strip_pixels[physical_led].Byte_3 = colour->Red;
-#endif        
+#endif
 #if CONFIG_TONEX_CONTROLLER_LED_COLOUR_ORDER_RGB
     // led is RGB colour order
     LedControl.led_strip_pixels[physical_led].Byte_1 = colour->Red;
@@ -383,15 +382,15 @@ static void leds_set_raw_data_from_colour(uint8_t led, tLedColour* colour)
 #endif //CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void leds_handle(void)
-{    
-#if !CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED    
+{
+#if !CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
     tLedMessage message;
     uint8_t loop;
     tLedColour boot_colour = {0, 0, 128};
@@ -429,11 +428,11 @@ void leds_handle(void)
                 LedControl.queued_state = LED_STATE_IDLE;
             }
             else
-            {            
+            {
                 // flash again
                 LedControl.queued_state = LED_STATE_BOOT_FLASH_ON;
             }
-            
+
             LedControl.state = LED_STATE_BOOT_WAIT;
             LedControl.timer = xTaskGetTickCount();
         } break;
@@ -472,19 +471,19 @@ void leds_handle(void)
 
         } break;
     }
-#endif //CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED    
+#endif //CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void leds_set_colour(uint16_t led_flags, tLedColour* colour)
 {
-#if !CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED        
+#if !CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
     tLedMessage message;
 
     message.led_flags = led_flags;
@@ -492,31 +491,31 @@ void leds_set_colour(uint16_t led_flags, tLedColour* colour)
 
     if (xQueueSend(led_input_queue, (void*)&message, 50) != pdPASS)
     {
-        ESP_LOGE(TAG, "leds_set_state queue send failed!");            
+        ESP_LOGE(TAG, "leds_set_state queue send failed!");
     }
-#endif    
+#endif
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
-__attribute__((weak)) uint8_t leds_get_physical_index_for_virtual_index(uint8_t virtual_index) 
+__attribute__((weak)) uint8_t leds_get_physical_index_for_virtual_index(uint8_t virtual_index)
 {
     // default 1:1 mapping.
     // functon is weak, platform can replace
-    return virtual_index;    
+    return virtual_index;
 }
 
 /****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
+* NAME:
+* DESCRIPTION:
+* PARAMETERS:
+* RETURN:
+* NOTES:
 *****************************************************************************/
 void leds_init(void)
 {
@@ -549,7 +548,7 @@ void leds_init(void)
     };
     ESP_ERROR_CHECK(rmt_new_tx_channel(&tx_chan_config, &LedControl.led_chan));
 
-    ESP_LOGI(TAG, "Install led strip encoder");    
+    ESP_LOGI(TAG, "Install led strip encoder");
 
     led_strip_encoder_config_t encoder_config = {
         .resolution = RMT_LED_STRIP_RESOLUTION_HZ,
@@ -557,6 +556,6 @@ void leds_init(void)
     ESP_ERROR_CHECK(rmt_new_led_strip_encoder(&encoder_config, &LedControl.led_encoder));
 
     ESP_LOGI(TAG, "Enable RMT TX channel");
-    ESP_ERROR_CHECK(rmt_enable(LedControl.led_chan));    
-#endif    //CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED 
+    ESP_ERROR_CHECK(rmt_enable(LedControl.led_chan));
+#endif    //CONFIG_TONEX_CONTROLLER_LED_CONTROL_DISABLED
 }

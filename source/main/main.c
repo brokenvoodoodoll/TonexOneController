@@ -59,7 +59,6 @@ limitations under the License.
 #include "usb_tonex_one.h"
 #include "footswitches.h"
 #include "control.h"
-#include "CH422G.h"
 #include "midi_serial.h"
 #include "leds.h"
 #include "tonex_params.h"

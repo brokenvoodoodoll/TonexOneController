@@ -65,7 +65,6 @@ limitations under the License.
 #include "usb_tonex_common.h"
 #include "usb_tonex_one.h"
 #include "usb_tonex.h"
-#include "CH422G.h"
 #include "control.h"
 #include "task_priorities.h"
 #include "tonex_params.h"

@@ -34,7 +34,6 @@ limitations under the License.
 #include "esp_log.h"
 #include "driver/i2c_master.h"
 #include "main.h"
-#include "CH422G.h"
 #include "control.h"
 #include "task_priorities.h"
 #include "usb/usb_host.h"
