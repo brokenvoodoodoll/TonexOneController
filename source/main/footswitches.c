@@ -81,8 +81,6 @@ typedef struct
     tFootswitchHandler Handlers[FOOTSWITCH_HANDLER_MAX];
     uint8_t io_expander_ok;
     uint8_t onboard_switch_mode;
-    uint8_t external_switch_mode;
-    tFootswitchEffectHandler ExternalFootswitchEffectHandler[MAX_EXTERNAL_EFFECT_FOOTSWITCHES];
     tFootswitchEffectHandler OnboardFootswitchEffectHandler[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
 } tFootswitchControl;
 
@@ -151,6 +149,16 @@ static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_
         {
             button_index = FOOTSWITCH_4;
         } break;
+
+        case 4:
+        {
+            button_index = FOOTSWITCH_5;
+        } break;
+
+        case 5:
+        {
+            button_index = FOOTSWITCH_6;
+        } break;
     }
 
     if (button_index == -1)
@@ -189,6 +197,16 @@ static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
     if (FOOTSWITCH_4 != -1)
     {
         *switch_state |= ((gpio_get_level(FOOTSWITCH_4) == 0) << 3);
+    }
+
+    if (FOOTSWITCH_5 != -1)
+    {
+        *switch_state |= ((gpio_get_level(FOOTSWITCH_5) == 0) << 3);
+    }
+
+    if (FOOTSWITCH_6 != -1)
+    {
+        *switch_state |= ((gpio_get_level(FOOTSWITCH_6) == 0) << 3);
     }
 
     return ESP_OK;
@@ -611,18 +629,6 @@ void footswitch_task(void *arg)
 
     ESP_LOGI(TAG, "Footswitch Internal layout: %d", (int)FootswitchControl.onboard_switch_mode);
 
-    // get preset switching layout for external footswitches
-    FootswitchControl.external_switch_mode = control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_PRESET_LAYOUT);
-
-    // load config for external effect buttons
-    for (configs = 0; configs < MAX_EXTERNAL_EFFECT_FOOTSWITCHES; configs++)
-    {
-        FootswitchControl.ExternalFootswitchEffectHandler[configs].config.Switch = control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_SW + (configs * 4));
-        FootswitchControl.ExternalFootswitchEffectHandler[configs].config.CC = control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_CC + (configs * 4));
-        FootswitchControl.ExternalFootswitchEffectHandler[configs].config.Value_1 = control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL1 + (configs * 4));
-        FootswitchControl.ExternalFootswitchEffectHandler[configs].config.Value_2 = control_get_config_item_int(CONFIG_ITEM_EXT_FOOTSW_EFFECT1_VAL2 + (configs * 4));
-    }
-
     // load config for internal effect buttons
     for (configs = 0; configs < MAX_INTERNAL_EFFECT_FOOTSWITCHES; configs++)
     {
@@ -670,6 +676,13 @@ void footswitch_task(void *arg)
                 footswitch_handle_quad_binary(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS]);
             } break;
 
+            case FOOTSWITCH_LAYOUT_1X6A:
+            case FOOTSWITCH_LAYOUT_1X6B:
+            case FOOTSWITCH_LAYOUT_2X3:
+            {
+                footswitch_handle_banked(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS], (tFootswitchLayoutEntry*)&FootswitchLayouts[FootswitchControl.onboard_switch_mode]);
+            } break;
+
             case FOOTSWITCH_LAYOUT_DISABLED:
             default:
             {
@@ -681,8 +694,7 @@ void footswitch_task(void *arg)
         footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS], FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
 
         // Binary footswitch modes always hold button states, so can't check for reset
-        if ((FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY) &&
-            (FootswitchControl.external_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY))
+        if (FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY)
         {
             // check for button held for data reset
             if (FOOTSWITCH_1 != -1)
@@ -730,8 +742,11 @@ void footswitches_init(void)
     if (FOOTSWITCH_2 >= 0) pin_bit_mask |= ((uint64_t)1 << FOOTSWITCH_2);
     if (FOOTSWITCH_3 >= 0) pin_bit_mask |= ((uint64_t)1 << FOOTSWITCH_3);
     if (FOOTSWITCH_4 >= 0) pin_bit_mask |= ((uint64_t)1 << FOOTSWITCH_4);
+    if (FOOTSWITCH_5 >= 0) pin_bit_mask |= ((uint64_t)1 << FOOTSWITCH_5);
+    if (FOOTSWITCH_6 >= 0) pin_bit_mask |= ((uint64_t)1 << FOOTSWITCH_6);
 
-    ESP_LOGI(TAG, "Init GPIO footswitches %d %d %d %d", FOOTSWITCH_1, FOOTSWITCH_2, FOOTSWITCH_3, FOOTSWITCH_4);
+    ESP_LOGI(TAG, "Init GPIO footswitches %d %d %d %d %d %d",
+        FOOTSWITCH_1, FOOTSWITCH_2, FOOTSWITCH_3, FOOTSWITCH_4, FOOTSWITCH_5, FOOTSWITCH_6);
 
     gpio_config_struct.pin_bit_mask = pin_bit_mask;
     gpio_config_struct.mode = GPIO_MODE_INPUT;

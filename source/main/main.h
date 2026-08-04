@@ -31,44 +31,24 @@ extern "C" {
 extern SemaphoreHandle_t I2CMutex_1;
 extern SemaphoreHandle_t I2CMutex_2;
 
-#if CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_WAVESHARE_ZERO
-    // I2C bus 1
-    #define I2C_MASTER_1_SCL_IO  GPIO_NUM_10
-    #define I2C_MASTER_1_SDA_IO  GPIO_NUM_11
+// I2C bus 1
+#define I2C_MASTER_1_SCL_IO  GPIO_NUM_10
+#define I2C_MASTER_1_SDA_IO  GPIO_NUM_11
 
-    // I2C bus 2
-    #define I2C_MASTER_2_SCL_IO  -1
-    #define I2C_MASTER_2_SDA_IO  -1
+// I2C bus 2
+#define I2C_MASTER_2_SCL_IO  -1
+#define I2C_MASTER_2_SDA_IO  -1
 
-    // direct IO pins
-    #define FOOTSWITCH_1		GPIO_NUM_4
-    #define FOOTSWITCH_2		GPIO_NUM_6
-    #define FOOTSWITCH_3		GPIO_NUM_2
-    #define FOOTSWITCH_4		GPIO_NUM_1
+// direct IO pins
+#define FOOTSWITCH_1		GPIO_NUM_1
+#define FOOTSWITCH_2		GPIO_NUM_3
+#define FOOTSWITCH_3		GPIO_NUM_5
+#define FOOTSWITCH_4		GPIO_NUM_2
+#define FOOTSWITCH_5		GPIO_NUM_4
+#define FOOTSWITCH_6		GPIO_NUM_6
 
-    // leds
-    #define LED_OUTPUT_GPIO_NUM    GPIO_NUM_21
-
-#elif CONFIG_TONEX_CONTROLLER_HARDWARE_PLATFORM_DEVKITC
-    // I2C bus 1
-    #define I2C_MASTER_1_SCL_IO  GPIO_NUM_10
-    #define I2C_MASTER_1_SDA_IO  GPIO_NUM_11
-
-    // I2C bus 2
-    #define I2C_MASTER_2_SCL_IO  -1
-    #define I2C_MASTER_2_SDA_IO  -1
-
-    // direct IO pins
-    #define FOOTSWITCH_1		GPIO_NUM_4
-    #define FOOTSWITCH_2		GPIO_NUM_6
-    #define FOOTSWITCH_3		GPIO_NUM_2
-    #define FOOTSWITCH_4		GPIO_NUM_1
-
-    // leds
-    #define LED_OUTPUT_GPIO_NUM   GPIO_NUM_48
-#else
-    #error "Unknown hardware platform!"
-#endif
+// leds
+#define LED_OUTPUT_GPIO_NUM   GPIO_NUM_48
 
 esp_err_t i2c_master_reset(void);
 
