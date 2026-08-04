@@ -61,13 +61,7 @@ static TaskHandle_t class_driver_task_hdl;
 static uint8_t AmpModellerType = AMP_MODELLER_NONE;
 static QueueHandle_t usb_input_queue;
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void client_event_cb(const usb_host_client_event_msg_t *event_msg, void *arg)
 {
     class_driver_t *driver_obj = (class_driver_t *)arg;
@@ -98,13 +92,7 @@ static void client_event_cb(const usb_host_client_event_msg_t *event_msg, void *
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void class_driver_task(void *arg)
 {
     esp_err_t err;
@@ -285,13 +273,7 @@ void class_driver_task(void *arg)
     ESP_LOGI(TAG, "USB thread exit");
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 #ifdef ENABLE_ENUM_FILTER_CALLBACK
 static bool set_config_cb(const usb_device_desc_t *dev_desc, uint8_t *bConfigurationValue)
 {
@@ -307,13 +289,7 @@ static bool set_config_cb(const usb_device_desc_t *dev_desc, uint8_t *bConfigura
 }
 #endif // ENABLE_ENUM_FILTER_CALLBACK
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void host_lib_daemon_task(void *arg)
 {
     esp_err_t err;
@@ -383,13 +359,7 @@ static void host_lib_daemon_task(void *arg)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_set_preset(uint32_t preset)
 {
     tUSBMessage message;
@@ -411,13 +381,7 @@ void usb_set_preset(uint32_t preset)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_modify_parameter(uint16_t index, float value)
 {
     tUSBMessage message;
@@ -442,13 +406,7 @@ void usb_modify_parameter(uint16_t index, float value)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_load_preset_to_slot_a(uint32_t preset)
 {
     tUSBMessage message;
@@ -470,13 +428,7 @@ void usb_load_preset_to_slot_a(uint32_t preset)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_load_preset_to_slot_b(uint32_t preset)
 {
     tUSBMessage message;
@@ -498,13 +450,7 @@ void usb_load_preset_to_slot_b(uint32_t preset)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_set_ab_slots(uint32_t preset_a, uint32_t preset_b)
 {
     tUSBMessage message;
@@ -526,13 +472,7 @@ void usb_set_ab_slots(uint32_t preset_a, uint32_t preset_b)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_save_preset(void)
 {
     tUSBMessage message;
@@ -554,13 +494,7 @@ void usb_save_preset(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t usb_get_max_presets_for_connected_modeller(void)
 {
     uint8_t max = MAX_PRESETS_TONEX_ONE;
@@ -580,13 +514,7 @@ uint8_t usb_get_max_presets_for_connected_modeller(void)
     return max;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t usb_get_first_preset_index_for_connected_modeller(void)
 {
     uint8_t first = 1;
@@ -608,25 +536,13 @@ uint8_t usb_get_first_preset_index_for_connected_modeller(void)
     return first;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t usb_get_connected_modeller_type(void)
 {
     return AmpModellerType;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void init_usb_comms(void)
 {
     // init USB

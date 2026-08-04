@@ -65,13 +65,7 @@ static __attribute__((unused)) i2c_master_bus_handle_t ic2_bus_handle_2;
 
 static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t port, uint32_t scl_pin, uint32_t sda_pin);
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t i2c_master_reset(void)
 {
     int sda_io = I2C_MASTER_1_SDA_IO;
@@ -123,13 +117,7 @@ esp_err_t i2c_master_reset(void)
     return i2c_master_init(&ic2_bus_handle_1, I2C_MASTER_NUM_1, I2C_MASTER_1_SCL_IO, I2C_MASTER_1_SDA_IO);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t port, uint32_t scl_pin, uint32_t sda_pin)
 {
     esp_err_t res;
@@ -148,13 +136,7 @@ static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t p
     return res;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void app_main(void)
 {
     ESP_LOGI(TAG, "ToneX One Controller App start");

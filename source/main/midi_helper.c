@@ -39,13 +39,7 @@ limitations under the License.
 
 static const char *TAG = "app_midi_helper";
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 float midi_helper_scale_midi_to_float(uint16_t param_index, uint8_t midi_value)
 {
     float min;
@@ -58,13 +52,7 @@ float midi_helper_scale_midi_to_float(uint16_t param_index, uint8_t midi_value)
     return min + (((float)midi_value / 127.0f) * (max - min));
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 float midi_helper_boolean_midi_to_float(uint8_t midi_value)
 {
     if (midi_value == MIDI_BOOL_ENABLE)
@@ -77,13 +65,7 @@ float midi_helper_boolean_midi_to_float(uint8_t midi_value)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t midi_helper_adjust_param_via_midi(uint8_t change_num, uint8_t midi_value)
 {
     switch (usb_get_connected_modeller_type())
@@ -97,13 +79,7 @@ esp_err_t midi_helper_adjust_param_via_midi(uint8_t change_num, uint8_t midi_val
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t midi_helper_get_param_for_change_num(uint8_t change_num, uint8_t midi_value_1, uint8_t midi_value_2)
 {
     switch (usb_get_connected_modeller_type())
@@ -117,13 +93,7 @@ uint16_t midi_helper_get_param_for_change_num(uint8_t change_num, uint8_t midi_v
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t midi_helper_process_incoming_data(uint8_t* data, uint8_t length, uint8_t midi_channel, uint8_t enable_CC)
 {
     uint8_t bytes_processed = 0;

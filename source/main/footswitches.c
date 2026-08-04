@@ -117,25 +117,13 @@ static const __attribute__((unused)) tFootswitchLayoutEntry FootswitchLayouts[FO
     {4,    4,   0x0000,   0x0000},            // FOOTSWITCH_LAYOUT_1X4_BINARY
 };
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static uint8_t get_banks_count(tFootswitchLayoutEntry* layout)
 {
     return ((usb_get_max_presets_for_connected_modeller() - 1) / layout->presets_per_bank) + 1;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_state)
 {
     int8_t button_index;
@@ -177,13 +165,7 @@ static esp_err_t footswitch_read_single_onboard(uint8_t number, uint8_t* switch_
     return ESP_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
 {
     *switch_state = 0;
@@ -212,13 +194,7 @@ static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
     return ESP_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandler* handler)
 {
     uint8_t value;
@@ -309,13 +285,7 @@ static void __attribute__((unused)) footswitch_handle_dual_mode(tFootswitchHandl
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler* handler, tFootswitchLayoutEntry* layout)
 {
     uint16_t binary_val = 0;
@@ -438,13 +408,7 @@ static void __attribute__((unused)) footswitch_handle_banked(tFootswitchHandler*
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void __attribute__((unused)) footswitch_handle_quad_binary(tFootswitchHandler* handler)
 {
     uint8_t value;
@@ -490,13 +454,7 @@ static void __attribute__((unused)) footswitch_handle_quad_binary(tFootswitchHan
     vTaskDelay(pdMS_TO_TICKS(180));
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEffectHandler* fx_handler, uint8_t max_configs)
 {
     uint8_t loop;
@@ -636,13 +594,7 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void footswitch_task(void *arg)
 {
     __attribute__((unused)) uint8_t value;
@@ -765,13 +717,7 @@ void footswitch_task(void *arg)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void footswitches_init(void)
 {
     memset((void*)&FootswitchControl, 0, sizeof(FootswitchControl));

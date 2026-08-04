@@ -39,13 +39,7 @@ limitations under the License.
 
 static const char *TAG = "app_midi_helper_tonex";
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static uint8_t midi_helper_tonex_boolean_midi_toggle(uint16_t param, uint8_t midi_value, float* value)
 {
     tModellerParameter* param_ptr;
@@ -77,13 +71,7 @@ static uint8_t midi_helper_tonex_boolean_midi_toggle(uint16_t param, uint8_t mid
     return 0;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t midi_value)
 {
     uint16_t param;
@@ -1263,13 +1251,7 @@ esp_err_t midi_helper_tonex_adjust_param_via_midi(uint8_t change_num, uint8_t mi
     return ESP_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t midi_helper_tonex_get_param_for_change_num(uint8_t change_num, uint8_t midi_value_1, uint8_t midi_value_2)
 {
     uint16_t param = TONEX_UNKNOWN;

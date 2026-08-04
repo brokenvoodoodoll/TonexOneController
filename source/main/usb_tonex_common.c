@@ -34,13 +34,7 @@ static const char *TAG = "app_TonexCommon";
 
 static uint8_t* PreallocatedMemory;
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t tonex_common_calculate_CRC(uint8_t* data, uint16_t length)
 {
     uint16_t crc = 0xFFFF;
@@ -65,13 +59,7 @@ uint16_t tonex_common_calculate_CRC(uint8_t* data, uint16_t length)
     return ~crc;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t tonex_common_add_byte_with_stuffing(uint8_t* output, uint8_t byte)
 {
     uint16_t length = 0;
@@ -92,13 +80,7 @@ uint16_t tonex_common_add_byte_with_stuffing(uint8_t* output, uint8_t byte)
     return length;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t tonex_common_add_framing(uint8_t* input, uint16_t inlength, uint8_t* output)
 {
     uint16_t outlength = 0;
@@ -125,13 +107,7 @@ uint16_t tonex_common_add_framing(uint8_t* input, uint16_t inlength, uint8_t* ou
     return outlength;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8_t* output, uint16_t* outlength)
 {
     *outlength = 0;
@@ -195,13 +171,7 @@ TonexStatus tonex_common_remove_framing(uint8_t* input, uint16_t inlength, uint8
     return STATUS_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t tonex_common_transmit(cdc_acm_dev_hdl_t cdc_dev, uint8_t* tx_data, uint16_t tx_len, uint32_t usb_buffer_size)
 {
     esp_err_t ret = ESP_FAIL;
@@ -239,13 +209,7 @@ esp_err_t tonex_common_transmit(cdc_acm_dev_hdl_t cdc_dev, uint8_t* tx_data, uin
 }
 
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t tonex_common_parse_value(uint8_t* message, uint8_t* index)
 {
     uint16_t value = 0;
@@ -269,13 +233,7 @@ uint16_t tonex_common_parse_value(uint8_t* message, uint8_t* index)
     return value;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint16_t tonex_common_locate_message_end(uint8_t* data, uint16_t length)
 {
     // locate the 0x7E end of packet marker
@@ -292,13 +250,7 @@ uint16_t tonex_common_locate_message_end(uint8_t* data, uint16_t length)
     return 0;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t tonex_common_modify_parameter(uint16_t index, float value)
 {
     tModellerParameter* param_ptr = NULL;
@@ -324,13 +276,7 @@ esp_err_t tonex_common_modify_parameter(uint16_t index, float value)
     return res;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void tonex_common_preallocate_memory(void)
 {
     // note here: the Tonex One requires large CDC buffers. Not many heap areas have enough contiguous space.
@@ -350,13 +296,7 @@ void tonex_common_preallocate_memory(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void tonex_common_release_memory(void)
 {
     ESP_LOGI(TAG, "Releasing preallocated memory");

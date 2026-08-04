@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
- 
+
 */
 
 #include <stdlib.h>
@@ -41,23 +41,23 @@ static const char *TAG = "app_ToneParams";
 static SemaphoreHandle_t ParamMutex;
 
 // "value" below is just a default, is overridden by the preset on load
-static tModellerParameter TonexParameters[TONEX_GLOBAL_LAST] = 
+static tModellerParameter TonexParameters[TONEX_GLOBAL_LAST] =
 {
     //value, Min,    Max,  Name         Type                      Data1,2,3
-    {0,      0,      1,    "NG POST", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_NOISE_GATE_POST   
+    {0,      0,      1,    "NG POST", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_NOISE_GATE_POST
     {1,      0,      1,    "NG POWER", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},           // TONEX_PARAM_NOISE_GATE_ENABLE,
     {-64,    -100,   0,    "NG THRESH", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},          // TONEX_PARAM_NOISE_GATE_THRESHOLD,
     {20,     5,      500,  "NG REL", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},             // TONEX_PARAM_NOISE_GATE_RELEASE,
     {-60,    -100,   -20,  "NG DEPTH", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},           // TONEX_PARAM_NOISE_GATE_DEPTH,
 
     // Compressor
-    {1,      0,      1,    "COMP POST",  MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},           // TONEX_PARAM_COMP_POST,             
+    {1,      0,      1,    "COMP POST",  MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},           // TONEX_PARAM_COMP_POST,
     {0,      0,      1,    "COMP POWER", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},          // TONEX_PARAM_COMP_ENABLE,
     {-14,    -40,    0,    "COMP THRESH", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},         // TONEX_PARAM_COMP_THRESHOLD,
     {-12,    -30,    10,   "COMP GAIN", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},           // TONEX_PARAM_COMP_MAKE_UP,
     {14,     1,      51,   "COMP ATTACK", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},          // TONEX_PARAM_COMP_ATTACK,
 
-    // EQ    
+    // EQ
     {0,      0,      1,    "EQ POST",   MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},             // TONEX_PARAM_EQ_POST,                // Pre/Post
     {5,      0,      10,   "EQ BASS", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},             // TONEX_PARAM_EQ_BASS,
     {300,    75,     600,  "EQ BFREQ", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_EQ_BASS_FREQ,
@@ -66,7 +66,7 @@ static tModellerParameter TonexParameters[TONEX_GLOBAL_LAST] =
     {750,    150,    5000, "EQ MFREQ", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_EQ_MID_FREQ,
     {5,      0,      10,   "EQ TREBLE", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},           // TONEX_PARAM_EQ_TREBLE,
     {1900,   1000,   4000, "EQ TFREQ", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_EQ_TREBLE_FREQ,
-    
+
     // Amplifier Model
     {1,      0,      1,    "MDL AMP", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_MODEL_AMP_ENABLE,
     {0,      0,      1,    "MDL SW1", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_MODEL_SW1,
@@ -90,7 +90,7 @@ static tModellerParameter TonexParameters[TONEX_GLOBAL_LAST] =
     // More amp params
     {5,      0,      10,   "MDL PRE", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_MODEL_PRESENCE
     {5,      0,      10,   "MDL DEP", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_MODEL_DEPTH
-    
+
     // Reverb
     {0,      0,      1,    "RVB POS", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},             // TONEX_PARAM_REVERB_POSITION,
     {1,      0,      1,    "RVB POWER", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},           // TONEX_PARAM_REVERB_ENABLE,
@@ -152,9 +152,9 @@ static tModellerParameter TonexParameters[TONEX_GLOBAL_LAST] =
     {0,      0,      300,  "MOD RO R", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_ROTARY_RADIUS,
     {0,      0,      100,  "MOD RO D", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_ROTARY_SPREAD,
     {0,      0,      10,   "MOD RO L", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_ROTARY_LEVEL,
-    
+
     // Delay
-    {0,      0,      1,    "DLY POST", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_DELAY_POST,    
+    {0,      0,      1,    "DLY POST", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_DELAY_POST,
     {0,      0,      1,    "DLY POWER", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},           // TONEX_PARAM_DELAY_ENABLE,
     {0,      0,      1,    "DLY MODEL", MODELLER_PARAM_TYPE_SELECT, 0, 0, 0},           // TONEX_PARAM_DELAY_MODEL,
     {0,      0,      1,    "DLY DG S", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_DELAY_DIGITAL_SYNC,
@@ -168,8 +168,8 @@ static tModellerParameter TonexParameters[TONEX_GLOBAL_LAST] =
     {0,      0,      1000, "DLY TA M", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_DELAY_TAPE_TIME,
     {0,      0,      100,  "DLY TA F", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_DELAY_TAPE_FEEDBACK,
     {0,      0,      1,    "DLY TA O", MODELLER_PARAM_TYPE_SWITCH, 0, 0, 0},            // TONEX_PARAM_DELAY_TAPE_MODE,
-    {0,      0,      100,  "DLY TA X", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_DELAY_TAPE_MIX,   
-    
+    {0,      0,      100,  "DLY TA X", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},            // TONEX_PARAM_DELAY_TAPE_MIX,
+
     // dummy end of params marker
     {0,      0,      0,    "LAST", MODELLER_PARAM_TYPE_RANGE, 0, 0, 0},                // TONEX_PARAM_LAST,
 
@@ -216,36 +216,24 @@ const tTonexPresetColorMapping TonexColorMap[COLORS_COUNT] = {
     {0x000000, 0x595959}, // grey
 };
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t tonex_params_get_locked_access(tModellerParameter** param_ptr)
 {
     // take mutex
     if (xSemaphoreTake(ParamMutex, pdMS_TO_TICKS(PARAM_MUTEX_TIMEOUT)) == pdTRUE)
-    {		
+    {
         *param_ptr = TonexParameters;
         return ESP_OK;
     }
     else
     {
-        ESP_LOGE(TAG, "tonex_params_get_locked_access Mutex timeout!");   
+        ESP_LOGE(TAG, "tonex_params_get_locked_access Mutex timeout!");
     }
 
     return ESP_FAIL;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t tonex_params_release_locked_access(void)
 {
     // release mutex
@@ -254,13 +242,7 @@ esp_err_t tonex_params_release_locked_access(void)
     return ESP_OK;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t tonex_params_get_min_max(uint16_t param_index, float* min, float* max)
 {
     if (param_index >= TONEX_GLOBAL_LAST)
@@ -271,7 +253,7 @@ esp_err_t tonex_params_get_min_max(uint16_t param_index, float* min, float* max)
 
     // take mutex
     if (xSemaphoreTake(ParamMutex, pdMS_TO_TICKS(PARAM_MUTEX_TIMEOUT)) == pdTRUE)
-    {		
+    {
         *min = TonexParameters[param_index].Min;
         *max = TonexParameters[param_index].Max;
 
@@ -282,19 +264,13 @@ esp_err_t tonex_params_get_min_max(uint16_t param_index, float* min, float* max)
     }
     else
     {
-        ESP_LOGE(TAG, "tonex_params_get_min_max Mutex timeout!");   
+        ESP_LOGE(TAG, "tonex_params_get_min_max Mutex timeout!");
     }
 
     return ESP_FAIL;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 float tonex_params_clamp_value(uint16_t param_index, float value)
 {
     if (param_index >= TONEX_GLOBAL_LAST)
@@ -305,7 +281,7 @@ float tonex_params_clamp_value(uint16_t param_index, float value)
 
     // take mutex
     if (xSemaphoreTake(ParamMutex, pdMS_TO_TICKS(PARAM_MUTEX_TIMEOUT)) == pdTRUE)
-    {		
+    {
         if (value < TonexParameters[param_index].Min)
         {
             value = TonexParameters[param_index].Min;
@@ -322,24 +298,18 @@ float tonex_params_clamp_value(uint16_t param_index, float value)
     }
     else
     {
-        ESP_LOGE(TAG, "tonex_params_clamp_value Mutex timeout!");   
+        ESP_LOGE(TAG, "tonex_params_clamp_value Mutex timeout!");
     }
 
     return 0;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t __attribute__((unused)) tonex_dump_parameters(void)
 {
     // take mutex
     if (xSemaphoreTake(ParamMutex, pdMS_TO_TICKS(PARAM_MUTEX_TIMEOUT)) == pdTRUE)
-    {	
+    {
         // dump all the param values and names
         for (uint32_t loop = 0; loop < TONEX_GLOBAL_LAST; loop++)
         {
@@ -353,19 +323,13 @@ esp_err_t __attribute__((unused)) tonex_dump_parameters(void)
     }
     else
     {
-        ESP_LOGE(TAG, "tonex_dump_parameters Mutex timeout!");   
+        ESP_LOGE(TAG, "tonex_dump_parameters Mutex timeout!");
     }
 
     return ESP_FAIL;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t tonex_params_colors_get_locked_access(tTonexPresetColor** color_ptr)
 {
     // take mutex
@@ -382,13 +346,7 @@ esp_err_t tonex_params_colors_get_locked_access(tTonexPresetColor** color_ptr)
     return ESP_FAIL;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t tonex_params_colors_get_color(uint16_t preset_index, uint32_t* preset_color)
 {
     // take mutex
@@ -418,13 +376,7 @@ esp_err_t tonex_params_colors_get_color(uint16_t preset_index, uint32_t* preset_
     return ESP_FAIL;
 }
 
-/****************************************************************************
-* NAME:        
-* DESCRIPTION: 
-* PARAMETERS:  
-* RETURN:      
-* NOTES:       
-*****************************************************************************/
+
 esp_err_t tonex_params_init(void)
 {
     // create mutex to protect interprocess issues with memory sharing

@@ -161,13 +161,7 @@ static uint8_t SavePresetUserText(uint16_t preset_index, char* text);
 static uint8_t LoadPresetUserText(uint16_t preset_index, char* text);
 static void DumpUserConfig(void);
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static uint8_t process_control_command(tControlMessage* message)
 {
     ESP_LOGI(TAG, "Control command %d", message->Event);
@@ -738,13 +732,7 @@ static uint8_t process_control_command(tControlMessage* message)
     return 1;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_request_preset_down(void)
 {
     tControlMessage message;
@@ -760,13 +748,7 @@ void control_request_preset_down(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_request_preset_up(void)
 {
     tControlMessage message;
@@ -782,13 +764,7 @@ void control_request_preset_up(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_request_preset_index(uint8_t index)
 {
     tControlMessage message;
@@ -805,13 +781,7 @@ void control_request_preset_index(uint8_t index)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_request_bank_index(uint8_t index)
 {
     tControlMessage message;
@@ -829,13 +799,7 @@ void control_request_bank_index(uint8_t index)
 }
 
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_request_ab_bank_down(void)
 {
     tControlMessage message;
@@ -851,13 +815,7 @@ void control_request_ab_bank_down(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_request_ab_bank_up(void)
 {
     tControlMessage message;
@@ -873,13 +831,7 @@ void control_request_ab_bank_up(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_sync_preset_name(uint16_t index, char* name)
 {
     tControlMessage message;
@@ -900,13 +852,7 @@ void control_sync_preset_name(uint16_t index, char* name)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_sync_preset_details(uint16_t index, char* name)
 {
     tControlMessage message;
@@ -927,13 +873,7 @@ void control_sync_preset_details(uint16_t index, char* name)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_user_text(char* text)
 {
     tControlMessage message;
@@ -953,13 +893,7 @@ void control_set_user_text(char* text)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_usb_status(uint32_t status)
 {
     tControlMessage message;
@@ -976,13 +910,7 @@ void control_set_usb_status(uint32_t status)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_save_user_data(uint8_t reboot)
 {
     tControlMessage message;
@@ -999,13 +927,6 @@ void control_save_user_data(uint8_t reboot)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
 void control_trigger_tap_tempo(void)
 {
     tControlMessage message;
@@ -1021,38 +942,20 @@ void control_trigger_tap_tempo(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint32_t control_get_current_preset_index(void)
 {
     return ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex];
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_get_current_preset_name(char* dest)
 {
     memcpy((void*)dest, (void*)ControlData.PresetNames[control_get_current_preset_index()], MAX_PRESET_NAME_LENGTH);
     dest[MAX_PRESET_NAME_LENGTH - 1] = 0;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_config_item_int(uint32_t item, uint32_t status)
 {
     tControlMessage message;
@@ -1078,13 +981,7 @@ void control_set_config_item_int(uint32_t item, uint32_t status)
     ESP_LOGE(TAG, "control_set_config_item_int queue send failed!");
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_config_item_string(uint32_t item, char* name)
 {
     tControlMessage message;
@@ -1113,13 +1010,7 @@ void control_set_config_item_string(uint32_t item, char* name)
     ESP_LOGE(TAG, "control_set_config_item_string queue send failed!");
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint32_t control_get_config_item_int(uint32_t item)
 {
     uint32_t value = 0;
@@ -1411,13 +1302,7 @@ uint32_t control_get_config_item_int(uint32_t item)
     return value;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_preset_order(uint8_t* order)
 {
     for (uint8_t index = 0; index < usb_get_max_presets_for_connected_modeller(); index++)
@@ -1431,25 +1316,13 @@ void control_set_preset_order(uint8_t* order)
 #endif
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t* control_get_preset_order(void)
 {
     return ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_pc_map(uint8_t* map)
 {
     for (uint8_t index = 0; index < MAX_PC_MAP; index++)
@@ -1458,50 +1331,26 @@ void control_set_pc_map(uint8_t* map)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t* control_get_pc_map(void)
 {
     return ControlData.ConfigData.PCMapConfig.PCMap;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_sync_complete(void)
 {
     ControlData.SyncComplete = 1;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 uint8_t control_get_sync_complete(void)
 {
     return ControlData.SyncComplete;
 }
 
 #if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static uint8_t PresetIndexForOrderValue(uint8_t value)
 {
     for (uint8_t i = 0; i < usb_get_max_presets_for_connected_modeller(); i++)
@@ -1515,13 +1364,7 @@ static uint8_t PresetIndexForOrderValue(uint8_t value)
 }
 #endif
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static esp_err_t LoadUserConfigItem(void* item, size_t item_length, char* key)
 {
     esp_err_t err;
@@ -1577,13 +1420,7 @@ static esp_err_t LoadUserConfigItem(void* item, size_t item_length, char* key)
     return result;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
 {
     esp_err_t err;
@@ -1641,13 +1478,7 @@ static esp_err_t SaveUserConfigItem(void* item, size_t item_length, char* key)
     return result;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static uint8_t SaveUserData(void)
 {
     ESP_LOGI(TAG, "Writing User Data");
@@ -1661,13 +1492,7 @@ static uint8_t SaveUserData(void)
     return 1;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static uint8_t LoadUserData(void)
 {
     uint8_t reset_order = 0;
@@ -1758,13 +1583,7 @@ static uint8_t LoadUserData(void)
     return 1;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static void DumpUserConfig(void)
 {
     ESP_LOGI(TAG, "Config Toggle bypass: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass);
@@ -1793,13 +1612,7 @@ static void DumpUserConfig(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static uint8_t SavePresetUserText(uint16_t preset_index, char* text)
 {
     esp_err_t err;
@@ -1852,13 +1665,7 @@ static uint8_t SavePresetUserText(uint16_t preset_index, char* text)
     return result;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:      none
-* NOTES:       none
-****************************************************************************/
+
 static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index, char* text)
 {
     esp_err_t err;
@@ -1918,13 +1725,7 @@ static uint8_t __attribute__((unused)) LoadPresetUserText(uint16_t preset_index,
     return result;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_set_default_config(void)
 {
     ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass = 0;
@@ -1970,13 +1771,7 @@ void control_set_default_config(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t control_get_connected_modeller_params_locked_access(tModellerParameter** param_ptr)
 {
     switch (usb_get_connected_modeller_type())
@@ -1990,13 +1785,7 @@ esp_err_t control_get_connected_modeller_params_locked_access(tModellerParameter
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 esp_err_t control_release_connected_modeller_params_locked_access(void)
 {
     switch (usb_get_connected_modeller_type())
@@ -2010,13 +1799,7 @@ esp_err_t control_release_connected_modeller_params_locked_access(void)
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_task(void *arg)
 {
     tControlMessage message;
@@ -2037,13 +1820,7 @@ void control_task(void *arg)
 	}
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_load_config(void)
 {
     esp_err_t ret;
@@ -2069,13 +1846,7 @@ void control_load_config(void)
     LoadUserData();
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void control_init(void)
 {
     // create queue for commands from other threads

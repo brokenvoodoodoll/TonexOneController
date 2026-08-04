@@ -197,13 +197,7 @@ static volatile tInputBufferEntry* InputBuffers;
 static TonexStatus usb_tonex_parse(uint8_t* message, uint16_t inlength);
 static esp_err_t usb_tonex_set_preset(uint16_t preset);
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_hello(void)
 {
     uint16_t outlength;
@@ -219,13 +213,7 @@ static esp_err_t usb_tonex_hello(void)
     return tonex_common_transmit(cdc_dev, FramedBuffer, outlength, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_request_state(void)
 {
     uint16_t outlength;
@@ -239,13 +227,7 @@ static esp_err_t usb_tonex_request_state(void)
     return tonex_common_transmit(cdc_dev, FramedBuffer, outlength, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_request_global_config(void)
 {
     uint16_t outlength;
@@ -259,13 +241,7 @@ static esp_err_t usb_tonex_request_global_config(void)
     return tonex_common_transmit(cdc_dev, FramedBuffer, outlength, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t __attribute__((unused)) usb_tonex_request_preset_details(uint8_t preset_index, uint8_t full_details)
 {
     uint16_t outlength;
@@ -303,13 +279,7 @@ static esp_err_t __attribute__((unused)) usb_tonex_request_preset_details(uint8_
     return tonex_common_transmit(cdc_dev, FramedBuffer, outlength, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_send_single_parameter(uint16_t index, float value)
 {
     uint16_t framed_length;
@@ -343,13 +313,7 @@ static esp_err_t usb_tonex_send_single_parameter(uint16_t index, float value)
     return tonex_common_transmit(cdc_dev, FramedBuffer, framed_length, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void __attribute__((unused)) usb_tonex_dump_globals(void)
 {
     float BPM;
@@ -376,13 +340,7 @@ static void __attribute__((unused)) usb_tonex_dump_globals(void)
     ESP_LOGI(TAG, "tBypass Mode: %3.2f", BypassMode);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_set_preset(uint16_t preset)
 {
     uint16_t framed_length;
@@ -423,13 +381,7 @@ static esp_err_t usb_tonex_set_preset(uint16_t preset)
     return tonex_common_transmit(cdc_dev, FramedBuffer, framed_length, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_send_global_config(void)
 {
     uint16_t framed_length;
@@ -450,13 +402,7 @@ static esp_err_t usb_tonex_send_global_config(void)
     return tonex_common_transmit(cdc_dev, FramedBuffer, framed_length, TONEX_USB_TX_BUFFER_SIZE);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static bool usb_tonex_handle_rx(const uint8_t* data, size_t data_len, void* arg)
 {
     // debug
@@ -495,13 +441,7 @@ static bool usb_tonex_handle_rx(const uint8_t* data, size_t data_len, void* arg)
     return false;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_modify_global(uint16_t global_val, float value)
 {
     esp_err_t res = ESP_FAIL;
@@ -561,13 +501,7 @@ static esp_err_t usb_tonex_modify_global(uint16_t global_val, float value)
     return res;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static TonexStatus usb_tonex_parse_state(uint8_t* unframed, uint16_t length, uint16_t index)
 {
     // state packet only has current preset index
@@ -583,13 +517,7 @@ static TonexStatus usb_tonex_parse_state(uint8_t* unframed, uint16_t length, uin
     return STATUS_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static TonexStatus usb_tonex_parse_preset_details(uint8_t* unframed, uint16_t length, uint16_t index)
 {
     TonexData->Message.Header.type = TYPE_STATE_PRESET_DETAILS;
@@ -605,13 +533,7 @@ static TonexStatus usb_tonex_parse_preset_details(uint8_t* unframed, uint16_t le
     return STATUS_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static TonexStatus usb_tonex_parse_param_changed(uint8_t* unframed, uint16_t length, uint16_t index)
 {
     uint8_t param_index = 0;
@@ -658,13 +580,7 @@ static TonexStatus usb_tonex_parse_param_changed(uint8_t* unframed, uint16_t len
     return STATUS_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static void usb_tonex_parse_preset_parameters(uint8_t* raw_data, uint16_t length)
 {
     uint8_t param_start_marker[] = {0xBA, 0x03, 0xBA, 0x6D};
@@ -717,13 +633,7 @@ static void usb_tonex_parse_preset_parameters(uint8_t* raw_data, uint16_t length
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static TonexStatus usb_tonex_parse_global_config(uint8_t* unframed, uint16_t length, uint16_t index)
 {
     uint8_t config_start_marker[] = {0xB9, 0x02, 0xba, 0x16};
@@ -844,13 +754,7 @@ static TonexStatus usb_tonex_parse_global_config(uint8_t* unframed, uint16_t len
     return STATUS_OK;
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static TonexStatus usb_tonex_parse(uint8_t* message, uint16_t inlength)
 {
     uint16_t out_len = 0;
@@ -994,13 +898,7 @@ static TonexStatus usb_tonex_parse(uint8_t* message, uint16_t inlength)
     };
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 static esp_err_t usb_tonex_process_single_message(uint8_t* data, uint16_t length)
 {
     void* temp_ptr;
@@ -1176,13 +1074,7 @@ static esp_err_t usb_tonex_process_single_message(uint8_t* data, uint16_t length
     }
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_tonex_handle(class_driver_t* driver_obj)
 {
     tUSBMessage message;
@@ -1362,13 +1254,7 @@ void usb_tonex_handle(class_driver_t* driver_obj)
     vTaskDelay(pdMS_TO_TICKS(2));
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_tonex_init(class_driver_t* driver_obj, QueueHandle_t comms_queue)
 {
     // save the queue handle
@@ -1521,13 +1407,7 @@ void usb_tonex_init(class_driver_t* driver_obj, QueueHandle_t comms_queue)
     control_set_usb_status(1);
 }
 
-/****************************************************************************
-* NAME:
-* DESCRIPTION:
-* PARAMETERS:
-* RETURN:
-* NOTES:
-*****************************************************************************/
+
 void usb_tonex_deinit(void)
 {
     // close USB
