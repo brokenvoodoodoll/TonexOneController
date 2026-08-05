@@ -1161,7 +1161,7 @@ static uint8_t LoadUserData(void)
         if (ControlData.ConfigData.FootSwitchConfig.FootswitchMode >= FOOTSWITCH_LAYOUT_LAST)
         {
             ESP_LOGW(TAG, "Config Footswitch mode invalid");
-            ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_1X2;
+            ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_2X3;
             SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
         }
     }
@@ -1346,7 +1346,7 @@ void control_set_default_config(void)
     ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass = 0;
     ControlData.ConfigData.GeneralConfig.GeneralLoopAround = 0;
 
-    ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_1X2;
+    ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_2X3;
 
 #if CONFIG_TONEX_CONTROLLER_SCREEN_ROTATION_DEFAULT_180
     ControlData.ConfigData.GeneralConfig.GeneralScreenRotation = SCREEN_ROTATION_180;

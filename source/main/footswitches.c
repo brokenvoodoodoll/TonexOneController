@@ -79,7 +79,6 @@ typedef struct
 typedef struct
 {
     tFootswitchHandler Handlers[FOOTSWITCH_HANDLER_MAX];
-    uint8_t io_expander_ok;
     uint8_t onboard_switch_mode;
     tFootswitchEffectHandler OnboardFootswitchEffectHandler[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
 } tFootswitchControl;
@@ -201,12 +200,12 @@ static esp_err_t footswitch_read_multiple_onboard(uint16_t* switch_state)
 
     if (FOOTSWITCH_5 != -1)
     {
-        *switch_state |= ((gpio_get_level(FOOTSWITCH_5) == 0) << 3);
+        *switch_state |= ((gpio_get_level(FOOTSWITCH_5) == 0) << 4);
     }
 
     if (FOOTSWITCH_6 != -1)
     {
-        *switch_state |= ((gpio_get_level(FOOTSWITCH_6) == 0) << 3);
+        *switch_state |= ((gpio_get_level(FOOTSWITCH_6) == 0) << 5);
     }
 
     return ESP_OK;
@@ -625,7 +624,8 @@ void footswitch_task(void *arg)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     // get the currently configured mode from web config
-    FootswitchControl.onboard_switch_mode = control_get_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE);
+    // FootswitchControl.onboard_switch_mode = control_get_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE);
+    FootswitchControl.onboard_switch_mode = FOOTSWITCH_LAYOUT_2X3;
 
     ESP_LOGI(TAG, "Footswitch Internal layout: %d", (int)FootswitchControl.onboard_switch_mode);
 
@@ -694,33 +694,30 @@ void footswitch_task(void *arg)
         footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS], FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
 
         // Binary footswitch modes always hold button states, so can't check for reset
-        if (FootswitchControl.onboard_switch_mode != FOOTSWITCH_LAYOUT_1X4_BINARY)
+        // check for button held for data reset
+        if (FOOTSWITCH_1 != -1)
         {
-            // check for button held for data reset
-            if (FOOTSWITCH_1 != -1)
+            if (footswitch_read_single_onboard(0, &value) == ESP_OK)
             {
-                if (footswitch_read_single_onboard(0, &value) == ESP_OK)
+                if (value == 1)
                 {
-                    if (value == 1)
+                    reset_timer++;
+
+                    // debug
+                    //ESP_LOGI(TAG, "Reset timer: %d", (int)reset_timer);
+
+                    if (reset_timer > BUTTON_FACTORY_RESET_TIME)
                     {
-                        reset_timer++;
+                        ESP_LOGI(TAG, "Config Reset to default");
+                        control_set_default_config();
 
-                        // debug
-                        //ESP_LOGI(TAG, "Reset timer: %d", (int)reset_timer);
-
-                        if (reset_timer > BUTTON_FACTORY_RESET_TIME)
-                        {
-                            ESP_LOGI(TAG, "Config Reset to default");
-                            control_set_default_config();
-
-                            // save and reboot
-                            control_save_user_data(1);
-                        }
+                        // save and reboot
+                        control_save_user_data(1);
                     }
-                    else
-                    {
-                        reset_timer = 0;
-                    }
+                }
+                else
+                {
+                    reset_timer = 0;
                 }
             }
         }
