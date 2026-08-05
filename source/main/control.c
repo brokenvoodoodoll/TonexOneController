@@ -44,8 +44,6 @@ limitations under the License.
 
 #define NVS_USERDATA_GENERAL_CONF           "genconf"
 #define NVS_USERDATA_FOOTSW_CONF            "footconf"
-#define NVS_USERDATA_PRESET_ORDER_CONF      "porderconf"
-#define NVS_USERDATA_PC_MAP_CONF            "pcmapconf"
 
 #define MAX_TEXT_LENGTH                     128
 #define MAX_PRESET_USER_TEXT_LENGTH         32
@@ -95,24 +93,10 @@ typedef struct __attribute__ ((packed))
     tExternalFootswitchEffectConfig InternalFootswitchEffectConfig[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
 } tFootSwitchConfig;
 
-typedef struct __attribute__ ((packed))
-{
-    // preset order mapping
-    uint8_t PresetOrder[MAX_SUPPORTED_PRESETS];
-} tPresetOrderMappingConfig;
-
-typedef struct __attribute__ ((packed))
-{
-    // program change mapping
-    uint8_t PCMap[MAX_PC_MAP];
-} tPCMapConfig;
-
 typedef struct
 {
     tGeneralConfig GeneralConfig;
     tFootSwitchConfig FootSwitchConfig;
-    tPresetOrderMappingConfig PresetOrderMappingConfig;
-    tPCMapConfig PCMapConfig;
 } tConfigData;
 
 typedef struct
@@ -162,17 +146,13 @@ static uint8_t process_control_command(tControlMessage* message)
                 if (control_get_config_item_int(CONFIG_ITEM_LOOP_AROUND))
                 {
                     uint8_t newIndex = (ControlData.PresetIndex > 0) ? (ControlData.PresetIndex - 1) : (usb_get_max_presets_for_connected_modeller() - 1);
-                    uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[newIndex];
-
                     // send message to USB
-                    usb_set_preset(preset);
+                    usb_set_preset(newIndex);
                 }
                 else if (ControlData.PresetIndex > 0)
                 {
-                    uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex - 1];
-
                     // send message to USB
-                    usb_set_preset(preset);
+                    usb_set_preset(ControlData.PresetIndex - 1);
                 }
             }
         } break;
@@ -184,17 +164,13 @@ static uint8_t process_control_command(tControlMessage* message)
                 if (control_get_config_item_int(CONFIG_ITEM_LOOP_AROUND))
                 {
                     uint8_t newIndex = (ControlData.PresetIndex < (usb_get_max_presets_for_connected_modeller() - 1)) ? (ControlData.PresetIndex + 1) : 0;
-                    uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[newIndex];
-
                     // send message to USB
-                    usb_set_preset(preset);
+                    usb_set_preset(newIndex);
                 }
                 else if (ControlData.PresetIndex < (usb_get_max_presets_for_connected_modeller() - 1))
                 {
-                    uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex + 1];
-
                     // send message to USB
-                    usb_set_preset(preset);
+                    usb_set_preset(ControlData.PresetIndex + 1);
                 }
             }
         } break;
@@ -203,10 +179,8 @@ static uint8_t process_control_command(tControlMessage* message)
         {
             if (ControlData.USBStatus != 0)
             {
-                uint8_t preset = ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[message->Value];
-
                 // send message to USB
-                usb_set_preset(preset);
+                usb_set_preset(message->Value);
             }
         } break;
 
@@ -703,7 +677,7 @@ void control_trigger_tap_tempo(void)
 
 uint32_t control_get_current_preset_index(void)
 {
-    return ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[ControlData.PresetIndex];
+    return ControlData.PresetIndex;
 }
 
 
@@ -871,41 +845,6 @@ uint32_t control_get_config_item_int(uint32_t item)
 }
 
 
-void control_set_preset_order(uint8_t* order)
-{
-    for (uint8_t index = 0; index < usb_get_max_presets_for_connected_modeller(); index++)
-    {
-        ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[index] = order[index];
-    }
-
-#if CONFIG_TONEX_CONTROLLER_HAS_DISPLAY
-    // update UI
-    UI_SetPresetLabel(PresetIndexForOrderValue(ControlData.PresetIndex), ControlData.PresetNames[ControlData.PresetIndex]);
-#endif
-}
-
-
-uint8_t* control_get_preset_order(void)
-{
-    return ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder;
-}
-
-
-void control_set_pc_map(uint8_t* map)
-{
-    for (uint8_t index = 0; index < MAX_PC_MAP; index++)
-    {
-        ControlData.ConfigData.PCMapConfig.PCMap[index] = map[index];
-    }
-}
-
-
-uint8_t* control_get_pc_map(void)
-{
-    return ControlData.ConfigData.PCMapConfig.PCMap;
-}
-
-
 void control_set_sync_complete(void)
 {
     ControlData.SyncComplete = 1;
@@ -921,14 +860,7 @@ uint8_t control_get_sync_complete(void)
 
 static uint8_t PresetIndexForOrderValue(uint8_t value)
 {
-    for (uint8_t i = 0; i < usb_get_max_presets_for_connected_modeller(); i++)
-    {
-        if (ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[i] == value)
-        {
-            return i;
-        }
-    }
-    return -1;
+    return value;
 }
 #endif
 
@@ -1054,8 +986,6 @@ static uint8_t SaveUserData(void)
     // save each config item
     SaveUserConfigItem((void*)&ControlData.ConfigData.GeneralConfig, sizeof(ControlData.ConfigData.GeneralConfig), NVS_USERDATA_GENERAL_CONF);
     SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
-    SaveUserConfigItem((void*)&ControlData.ConfigData.PresetOrderMappingConfig, sizeof(ControlData.ConfigData.PresetOrderMappingConfig), NVS_USERDATA_PRESET_ORDER_CONF);
-    SaveUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF);
 
     return 1;
 }
@@ -1063,9 +993,6 @@ static uint8_t SaveUserData(void)
 
 static uint8_t LoadUserData(void)
 {
-    uint8_t reset_order = 0;
-    uint32_t loop;
-
     // load each config item
     // General
     if (LoadUserConfigItem((void*)&ControlData.ConfigData.GeneralConfig, sizeof(ControlData.ConfigData.GeneralConfig), NVS_USERDATA_GENERAL_CONF) != ESP_OK)
@@ -1077,42 +1004,6 @@ static uint8_t LoadUserData(void)
     if (LoadUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF) != ESP_OK)
     {
         SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
-    }
-
-    // Preset order mapping
-    if (LoadUserConfigItem((void*)&ControlData.ConfigData.PresetOrderMappingConfig, sizeof(ControlData.ConfigData.PresetOrderMappingConfig), NVS_USERDATA_PRESET_ORDER_CONF) != ESP_OK)
-    {
-        SaveUserConfigItem((void*)&ControlData.ConfigData.PresetOrderMappingConfig, sizeof(ControlData.ConfigData.PresetOrderMappingConfig), NVS_USERDATA_PRESET_ORDER_CONF);
-    }
-
-    // PC mapping
-    if (LoadUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF) != ESP_OK)
-    {
-        SaveUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF);
-    }
-
-    // check the preset order
-    for (loop = 0; loop < MAX_SUPPORTED_PRESETS; loop++)
-    {
-        // check for any invalid values
-        if (ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[loop] > MAX_SUPPORTED_PRESETS)
-        {
-            reset_order = 1;
-            break;
-        }
-    }
-
-    if (reset_order)
-    {
-        ESP_LOGW(TAG, "Repairing preset layout");
-
-        // fix corrupted preset order
-        for (loop = 0; loop < MAX_SUPPORTED_PRESETS; loop++)
-        {
-            ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[loop] = loop;
-        }
-
-        SaveUserConfigItem((void*)&ControlData.ConfigData.PresetOrderMappingConfig, sizeof(ControlData.ConfigData.PresetOrderMappingConfig), NVS_USERDATA_PRESET_ORDER_CONF);
     }
 
     // show the config
@@ -1274,18 +1165,6 @@ void control_set_default_config(void)
     for (uint8_t loop = 0; loop < MAX_INTERNAL_EFFECT_FOOTSWITCHES; loop++)
     {
         ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[loop].Switch = SWITCH_NOT_USED;
-    }
-
-    // default to 1:1 mappings
-    for (uint8_t loop = 0; loop < MAX_SUPPORTED_PRESETS; loop++)
-    {
-        ControlData.ConfigData.PresetOrderMappingConfig.PresetOrder[loop] = loop;
-    }
-
-    for (uint8_t loop = 0; loop < MAX_PC_MAP; loop++)
-    {
-        // issue here, really need to use (loop + usb_get_first_preset_index_for_connected_modeller()) but modeller may not yet be connected
-        ControlData.ConfigData.PCMapConfig.PCMap[loop] = loop;
     }
 }
 
