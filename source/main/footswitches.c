@@ -491,6 +491,13 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
                 // is this switch configured?
                 if (fx_handler[loop].config.Switch != SWITCH_NOT_USED)
                 {
+                    // Skip switches reserved for banked preset switching (Switches 0..2 in 1X3 layout)
+                    if (FootswitchControl.onboard_switch_mode == FOOTSWITCH_LAYOUT_1X3 &&
+                        fx_handler[loop].config.Switch < 3)
+                    {
+                        continue;
+                    }
+
                     // check if switch is pressed
                     if (handler->footswitch_single_reader(fx_handler[loop].config.Switch, &value) == ESP_OK)
                     {
@@ -625,7 +632,7 @@ void footswitch_task(void *arg)
 
     // get the currently configured mode from web config
     // FootswitchControl.onboard_switch_mode = control_get_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE);
-    FootswitchControl.onboard_switch_mode = FOOTSWITCH_LAYOUT_2X3;
+    FootswitchControl.onboard_switch_mode = FOOTSWITCH_LAYOUT_1X3;
 
     ESP_LOGI(TAG, "Footswitch Internal layout: %d", (int)FootswitchControl.onboard_switch_mode);
 
@@ -636,13 +643,32 @@ void footswitch_task(void *arg)
         FootswitchControl.OnboardFootswitchEffectHandler[configs].config.CC = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_CC + (configs * 4));
         FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_1 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL1 + (configs * 4));
         FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_2 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL2 + (configs * 4));
+    }
 
-        // debug
-        //ESP_LOGI(TAG, "Config Internal Footswitch %d, %d, %d, %d, %d", (int)configs,
-        //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Switch,
-        //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.CC,
-        //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_1,
-        //                                                            (int)FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_2);
+    // Default fallback mappings for buttons 4, 5, 6 if not set in NVS
+    // Button 4 (Switch 3): Stomp / Comp CC 14
+    if (FootswitchControl.OnboardFootswitchEffectHandler[0].config.Switch == SWITCH_NOT_USED)
+    {
+        FootswitchControl.OnboardFootswitchEffectHandler[0].config.Switch = 3; // Footswitch 4
+        FootswitchControl.OnboardFootswitchEffectHandler[0].config.CC = 14;   // Comp Enable
+        FootswitchControl.OnboardFootswitchEffectHandler[0].config.Value_1 = 0;
+        FootswitchControl.OnboardFootswitchEffectHandler[0].config.Value_2 = 64;
+    }
+    // Button 5 (Switch 4): Delay CC 2
+    if (FootswitchControl.OnboardFootswitchEffectHandler[1].config.Switch == SWITCH_NOT_USED)
+    {
+        FootswitchControl.OnboardFootswitchEffectHandler[1].config.Switch = 4; // Footswitch 5
+        FootswitchControl.OnboardFootswitchEffectHandler[1].config.CC = 2;    // Delay Enable
+        FootswitchControl.OnboardFootswitchEffectHandler[1].config.Value_1 = 0;
+        FootswitchControl.OnboardFootswitchEffectHandler[1].config.Value_2 = 64;
+    }
+    // Button 6 (Switch 5): Reverb CC 12
+    if (FootswitchControl.OnboardFootswitchEffectHandler[2].config.Switch == SWITCH_NOT_USED)
+    {
+        FootswitchControl.OnboardFootswitchEffectHandler[2].config.Switch = 5; // Footswitch 6
+        FootswitchControl.OnboardFootswitchEffectHandler[2].config.CC = 12;   // Reverb Enable
+        FootswitchControl.OnboardFootswitchEffectHandler[2].config.Value_1 = 0;
+        FootswitchControl.OnboardFootswitchEffectHandler[2].config.Value_2 = 64;
     }
 
     // setup handler for onboard IO footswitches
