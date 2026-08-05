@@ -458,7 +458,7 @@ static void __attribute__((unused)) footswitch_handle_quad_binary(tFootswitchHan
 }
 
 
-static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEffectHandler* fx_handler, uint8_t max_configs)
+static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEffectHandler* fx_handler)
 {
     uint8_t loop;
     uint8_t value;
@@ -472,7 +472,7 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
          case FOOTSWITCH_IDLE:
          default:
          {
-            for (loop = 0; loop < max_configs; loop++)
+            for (loop = 0; loop < MAX_INTERNAL_EFFECT_FOOTSWITCHES; loop++)
             {
                 // is this switch configured?
                 if (fx_handler[loop].config.Switch != SWITCH_NOT_USED)
@@ -626,29 +626,22 @@ void footswitch_task(void *arg)
 
     // Default fallback mappings for buttons 4, 5, 6 if not set in NVS
     // Button 4 (Switch 3): Stomp / Comp CC 14
-    if (FootswitchControl.OnboardFootswitchEffectHandler[0].config.Switch == SWITCH_NOT_USED)
-    {
-        FootswitchControl.OnboardFootswitchEffectHandler[0].config.Switch = 3; // Footswitch 4
-        FootswitchControl.OnboardFootswitchEffectHandler[0].config.CC = 14;   // Comp Enable
-        FootswitchControl.OnboardFootswitchEffectHandler[0].config.Value_1 = 0;
-        FootswitchControl.OnboardFootswitchEffectHandler[0].config.Value_2 = 64;
-    }
+    FootswitchControl.OnboardFootswitchEffectHandler[0].config.Switch = 3; // Footswitch 4
+    FootswitchControl.OnboardFootswitchEffectHandler[0].config.CC = 14;   // Comp Enable
+    FootswitchControl.OnboardFootswitchEffectHandler[0].config.Value_1 = 0;
+    FootswitchControl.OnboardFootswitchEffectHandler[0].config.Value_2 = 64;
+
     // Button 5 (Switch 4): Delay CC 2
-    if (FootswitchControl.OnboardFootswitchEffectHandler[1].config.Switch == SWITCH_NOT_USED)
-    {
-        FootswitchControl.OnboardFootswitchEffectHandler[1].config.Switch = 4; // Footswitch 5
-        FootswitchControl.OnboardFootswitchEffectHandler[1].config.CC = 2;    // Delay Enable
-        FootswitchControl.OnboardFootswitchEffectHandler[1].config.Value_1 = 0;
-        FootswitchControl.OnboardFootswitchEffectHandler[1].config.Value_2 = 64;
-    }
+    FootswitchControl.OnboardFootswitchEffectHandler[1].config.Switch = 4; // Footswitch 5
+    FootswitchControl.OnboardFootswitchEffectHandler[1].config.CC = 2;    // Delay Enable
+    FootswitchControl.OnboardFootswitchEffectHandler[1].config.Value_1 = 0;
+    FootswitchControl.OnboardFootswitchEffectHandler[1].config.Value_2 = 64;
+
     // Button 6 (Switch 5): Reverb CC 12
-    if (FootswitchControl.OnboardFootswitchEffectHandler[2].config.Switch == SWITCH_NOT_USED)
-    {
-        FootswitchControl.OnboardFootswitchEffectHandler[2].config.Switch = 5; // Footswitch 6
-        FootswitchControl.OnboardFootswitchEffectHandler[2].config.CC = 12;   // Reverb Enable
-        FootswitchControl.OnboardFootswitchEffectHandler[2].config.Value_1 = 0;
-        FootswitchControl.OnboardFootswitchEffectHandler[2].config.Value_2 = 64;
-    }
+    FootswitchControl.OnboardFootswitchEffectHandler[2].config.Switch = 5; // Footswitch 6
+    FootswitchControl.OnboardFootswitchEffectHandler[2].config.CC = 12;   // Reverb Enable
+    FootswitchControl.OnboardFootswitchEffectHandler[2].config.Value_1 = 0;
+    FootswitchControl.OnboardFootswitchEffectHandler[2].config.Value_2 = 64;
 
     // setup handler for onboard IO footswitches
     FootswitchControl.PresetsHandler.footswitch_single_reader = &footswitch_read_single_onboard;
@@ -662,7 +655,7 @@ void footswitch_task(void *arg)
         // handle presets switching
         footswitch_handle_banked(&FootswitchControl.PresetsHandler, (tFootswitchLayoutEntry*)&FootswitchLayouts[FOOTSWITCH_LAYOUT_1X3]);
         // handle effects switching
-        footswitch_handle_effects(&FootswitchControl.EffectsHandler, FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
+        footswitch_handle_effects(&FootswitchControl.EffectsHandler, FootswitchControl.OnboardFootswitchEffectHandler);
 
         // Binary footswitch modes always hold button states, so can't check for reset
         // check for button held for data reset
