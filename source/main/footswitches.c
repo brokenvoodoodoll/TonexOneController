@@ -50,13 +50,6 @@ enum FootswitchStates
     FOOTSWITCH_WAIT_RELEASE_2
 };
 
-enum FootswitchHandlers
-{
-    FOOTSWITCH_HANDLER_ONBOARD_PRESETS,
-    FOOTSWITCH_HANDLER_ONBOARD_EFFECTS,
-    FOOTSWITCH_HANDLER_MAX
-};
-
 static const char *TAG = "app_footswitches";
 
 typedef struct
@@ -78,8 +71,8 @@ typedef struct
 
 typedef struct
 {
-    tFootswitchHandler Handlers[FOOTSWITCH_HANDLER_MAX];
-    uint8_t onboard_switch_mode;
+    tFootswitchHandler PresetsHandler;
+    tFootswitchHandler EffectsHandler;
     tFootswitchEffectHandler OnboardFootswitchEffectHandler[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
 } tFootswitchControl;
 
@@ -492,8 +485,7 @@ static void footswitch_handle_effects(tFootswitchHandler* handler, tFootswitchEf
                 if (fx_handler[loop].config.Switch != SWITCH_NOT_USED)
                 {
                     // Skip switches reserved for banked preset switching (Switches 0..2 in 1X3 layout)
-                    if (FootswitchControl.onboard_switch_mode == FOOTSWITCH_LAYOUT_1X3 &&
-                        fx_handler[loop].config.Switch < 3)
+                    if (fx_handler[loop].config.Switch < 3)
                     {
                         continue;
                     }
@@ -630,12 +622,6 @@ void footswitch_task(void *arg)
     // let things settle
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    // get the currently configured mode from web config
-    // FootswitchControl.onboard_switch_mode = control_get_config_item_int(CONFIG_ITEM_FOOTSWITCH_MODE);
-    FootswitchControl.onboard_switch_mode = FOOTSWITCH_LAYOUT_1X3;
-
-    ESP_LOGI(TAG, "Footswitch Internal layout: %d", (int)FootswitchControl.onboard_switch_mode);
-
     // load config for internal effect buttons
     for (configs = 0; configs < MAX_INTERNAL_EFFECT_FOOTSWITCHES; configs++)
     {
@@ -672,52 +658,18 @@ void footswitch_task(void *arg)
     }
 
     // setup handler for onboard IO footswitches
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS].footswitch_single_reader = &footswitch_read_single_onboard;
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS].footswitch_multiple_reader = &footswitch_read_multiple_onboard;
+    FootswitchControl.PresetsHandler.footswitch_single_reader = &footswitch_read_single_onboard;
+    FootswitchControl.PresetsHandler.footswitch_multiple_reader = &footswitch_read_multiple_onboard;
 
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS].footswitch_single_reader = &footswitch_read_single_onboard;
-    FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS].footswitch_multiple_reader = &footswitch_read_multiple_onboard;
+    FootswitchControl.PresetsHandler.footswitch_single_reader = &footswitch_read_single_onboard;
+    FootswitchControl.PresetsHandler.footswitch_multiple_reader = &footswitch_read_multiple_onboard;
 
     while (1)
     {
-        // handle onboard IO foot switches (direct GPIO and IO expander on main PCB)
-        switch (FootswitchControl.onboard_switch_mode)
-        {
-            case FOOTSWITCH_LAYOUT_1X2:
-            {
-                // run dual mode next/previous
-                footswitch_handle_dual_mode(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS]);
-            } break;
-
-            case FOOTSWITCH_LAYOUT_1X3: // fallthrough
-            case FOOTSWITCH_LAYOUT_1X4:
-            {
-                // run bankedswitches
-                footswitch_handle_banked(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS], (tFootswitchLayoutEntry*)&FootswitchLayouts[FootswitchControl.onboard_switch_mode]);
-            } break;
-
-            case FOOTSWITCH_LAYOUT_1X4_BINARY:
-            {
-                // run 4 switch binary mode
-                footswitch_handle_quad_binary(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS]);
-            } break;
-
-            case FOOTSWITCH_LAYOUT_1X6A:
-            case FOOTSWITCH_LAYOUT_1X6B:
-            case FOOTSWITCH_LAYOUT_2X3:
-            {
-                footswitch_handle_banked(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_PRESETS], (tFootswitchLayoutEntry*)&FootswitchLayouts[FootswitchControl.onboard_switch_mode]);
-            } break;
-
-            case FOOTSWITCH_LAYOUT_DISABLED:
-            default:
-            {
-                // nothing to do
-            } break;
-        }
-
+        // handle presets switching
+        footswitch_handle_banked(&FootswitchControl.PresetsHandler, (tFootswitchLayoutEntry*)&FootswitchLayouts[FOOTSWITCH_LAYOUT_1X3]);
         // handle effects switching
-        footswitch_handle_effects(&FootswitchControl.Handlers[FOOTSWITCH_HANDLER_ONBOARD_EFFECTS], FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
+        footswitch_handle_effects(&FootswitchControl.EffectsHandler, FootswitchControl.OnboardFootswitchEffectHandler, MAX_INTERNAL_EFFECT_FOOTSWITCHES);
 
         // Binary footswitch modes always hold button states, so can't check for reset
         // check for button held for data reset

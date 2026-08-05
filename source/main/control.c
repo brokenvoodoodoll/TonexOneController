@@ -98,10 +98,6 @@ typedef struct __attribute__ ((packed))
 
 typedef struct __attribute__ ((packed))
 {
-    uint8_t FootswitchMode;
-
-    // internal footswitches
-    uint8_t InternalFootswitchPresetLayout;
     tExternalFootswitchEffectConfig InternalFootswitchEffectConfig[MAX_INTERNAL_EFFECT_FOOTSWITCHES];
 } tFootSwitchConfig;
 
@@ -354,12 +350,6 @@ static uint8_t process_control_command(tControlMessage* message)
                 {
                     ESP_LOGI(TAG, "Config set Loop Around %d", (int)message->Value);
                     ControlData.ConfigData.GeneralConfig.GeneralLoopAround = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_FOOTSWITCH_MODE:
-                {
-                    ESP_LOGI(TAG, "Config set Footswitch Mode %d", (int)message->Value);
-                    ControlData.ConfigData.FootSwitchConfig.FootswitchMode = (uint8_t)message->Value;
                 } break;
 
                 case CONFIG_ITEM_SCREEN_ROTATION:
@@ -826,11 +816,6 @@ uint32_t control_get_config_item_int(uint32_t item)
             value = ControlData.ConfigData.GeneralConfig.GeneralLoopAround;
         } break;
 
-        case CONFIG_ITEM_FOOTSWITCH_MODE:
-        {
-            value = ControlData.ConfigData.FootSwitchConfig.FootswitchMode;
-        } break;
-
         case CONFIG_ITEM_SCREEN_ROTATION:
         {
             value = ControlData.ConfigData.GeneralConfig.GeneralScreenRotation;
@@ -1156,26 +1141,6 @@ static uint8_t LoadUserData(void)
         SaveUserConfigItem((void*)&ControlData.ConfigData.PCMapConfig.PCMap, sizeof(ControlData.ConfigData.PCMapConfig.PCMap), NVS_USERDATA_PC_MAP_CONF);
     }
 
-    if (ControlData.ConfigData.FootSwitchConfig.FootswitchMode != FOOTSWITCH_LAYOUT_DISABLED)
-    {
-        if (ControlData.ConfigData.FootSwitchConfig.FootswitchMode >= FOOTSWITCH_LAYOUT_LAST)
-        {
-            ESP_LOGW(TAG, "Config Footswitch mode invalid");
-            ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_2X3;
-            SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
-        }
-    }
-
-    if (ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout != FOOTSWITCH_LAYOUT_DISABLED)
-    {
-        if (ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout >= FOOTSWITCH_LAYOUT_LAST)
-        {
-            ESP_LOGW(TAG, "Config Internal Footswitch preset layout invalid");
-            ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout = FOOTSWITCH_LAYOUT_2X3;
-            SaveUserConfigItem((void*)&ControlData.ConfigData.FootSwitchConfig, sizeof(ControlData.ConfigData.FootSwitchConfig), NVS_USERDATA_FOOTSW_CONF);
-        }
-    }
-
     // check the preset order
     for (loop = 0; loop < MAX_SUPPORTED_PRESETS; loop++)
     {
@@ -1211,10 +1176,8 @@ static void DumpUserConfig(void)
 {
     ESP_LOGI(TAG, "Config Toggle bypass: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass);
     ESP_LOGI(TAG, "Config Loop around: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralLoopAround);
-    ESP_LOGI(TAG, "Config Footswitch Mode: %d", (int)ControlData.ConfigData.FootSwitchConfig.FootswitchMode);
     ESP_LOGI(TAG, "Config Screen Rotation: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralScreenRotation);
     ESP_LOGI(TAG, "Config Save preset to slot: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot);
-    ESP_LOGI(TAG, "Config Int Footsw Prst Layout: %d", (int)ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout);
     ESP_LOGI(TAG, "Config Higher Touch Sense: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity);
     ESP_LOGI(TAG, "Config Hide BPM flasher: %d", (int)ControlData.ConfigData.GeneralConfig.GeneralHideBPM);
 
@@ -1346,8 +1309,6 @@ void control_set_default_config(void)
     ControlData.ConfigData.GeneralConfig.GeneralDoublePressToggleBypass = 0;
     ControlData.ConfigData.GeneralConfig.GeneralLoopAround = 0;
 
-    ControlData.ConfigData.FootSwitchConfig.FootswitchMode = FOOTSWITCH_LAYOUT_2X3;
-
 #if CONFIG_TONEX_CONTROLLER_SCREEN_ROTATION_DEFAULT_180
     ControlData.ConfigData.GeneralConfig.GeneralScreenRotation = SCREEN_ROTATION_180;
 #else
@@ -1357,7 +1318,6 @@ void control_set_default_config(void)
     ControlData.ConfigData.GeneralConfig.GeneralSavePresetToSlot = SAVE_PRESET_SLOT_C;
     ControlData.ConfigData.GeneralConfig.GeneralEnableTouchHigherSensitivity = 0;
     ControlData.ConfigData.GeneralConfig.GeneralHideBPM = 0;
-    ControlData.ConfigData.FootSwitchConfig.InternalFootswitchPresetLayout = FOOTSWITCH_LAYOUT_2X3;
     memset((void*)ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig, 0, sizeof(ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig));
 
     // default to no switches configured

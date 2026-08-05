@@ -19,6 +19,7 @@ limitations under the License.
 #ifndef _MAIN_H
 #define _MAIN_H
 
+#include "freertos/idf_additions.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

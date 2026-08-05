@@ -17,6 +17,8 @@ limitations under the License.
 
 #pragma once
 
+#include "esp_err.h"
+#include <stdint.h>
 void control_init(void);
 void control_load_config(void);
 
@@ -24,7 +26,6 @@ enum ConfigItems
 {
     CONFIG_ITEM_TOGGLE_BYPASS,
     CONFIG_ITEM_LOOP_AROUND,
-    CONFIG_ITEM_FOOTSWITCH_MODE,
     CONFIG_ITEM_SCREEN_ROTATION,
     CONFIG_ITEM_SAVE_PRESET_TO_SLOT,
     CONFIG_ITEM_INT_FOOTSW_EFFECT1_SW,
