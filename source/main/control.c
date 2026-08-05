@@ -42,18 +42,12 @@ limitations under the License.
 
 #define CTRL_TASK_STACK_SIZE                (3 * 1024)
 
-#define NVS_USERDATA_NAME                   "userdata"
-#define NVS_USERDATA_SKIN_CONF              "skinconf"
-#define NVS_USERDATA_BT_CONF                "btconf"
-#define NVS_USERDATA_SMIDI_CONF             "smidiconf"
 #define NVS_USERDATA_GENERAL_CONF           "genconf"
 #define NVS_USERDATA_FOOTSW_CONF            "footconf"
-#define NVS_USERDATA_WIFI_CONF              "wificonf"
 #define NVS_USERDATA_PRESET_ORDER_CONF      "porderconf"
 #define NVS_USERDATA_PC_MAP_CONF            "pcmapconf"
 
 #define MAX_TEXT_LENGTH                     128
-#define MAX_BT_CUSTOM_NAME                  25
 #define MAX_PRESET_USER_TEXT_LENGTH         32
 
 #define MAX_CONFIG_SAVE_RETRIES             10
@@ -440,30 +434,6 @@ static uint8_t process_control_command(tControlMessage* message)
                 {
                     ESP_LOGI(TAG, "Config set internal footsw effect3 Value_2 %d", (int)message->Value);
                     ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[2].Value_2 = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_INT_FOOTSW_EFFECT4_SW:
-                {
-                    ESP_LOGI(TAG, "Config set internal footsw effect4 sw %d", (int)message->Value);
-                    ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Switch = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_INT_FOOTSW_EFFECT4_CC:
-                {
-                    ESP_LOGI(TAG, "Config set internal footsw effect4 CC %d", (int)message->Value);
-                    ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].CC = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL1:
-                {
-                    ESP_LOGI(TAG, "Config set internal footsw effect4 Value_1 %d", (int)message->Value);
-                    ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Value_1 = (uint8_t)message->Value;
-                } break;
-
-                case CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL2:
-                {
-                    ESP_LOGI(TAG, "Config set internal footsw effect4 Value_2 %d", (int)message->Value);
-                    ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Value_2 = (uint8_t)message->Value;
                 } break;
             }
         } break;
@@ -889,26 +859,6 @@ uint32_t control_get_config_item_int(uint32_t item)
         case CONFIG_ITEM_INT_FOOTSW_EFFECT3_VAL2:
         {
             value = ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[2].Value_2;
-        } break;
-
-        case CONFIG_ITEM_INT_FOOTSW_EFFECT4_SW:
-        {
-            value = ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Switch;
-        } break;
-
-        case CONFIG_ITEM_INT_FOOTSW_EFFECT4_CC:
-        {
-            value = ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].CC;
-        } break;
-
-        case CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL1:
-        {
-            value = ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Value_1;
-        } break;
-
-        case CONFIG_ITEM_INT_FOOTSW_EFFECT4_VAL2:
-        {
-            value = ControlData.ConfigData.FootSwitchConfig.InternalFootswitchEffectConfig[3].Value_2;
         } break;
 
         default:
