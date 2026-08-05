@@ -18,26 +18,19 @@ limitations under the License.
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "driver/gpio.h"
 #include "esp_err.h"
-#include "esp_system.h"
 #include "esp_log.h"
-#include "nvs_flash.h"
-#include "sys/param.h"
 #include "esp_log.h"
-#include "driver/i2c_master.h"
 #include "main.h"
 #include "control.h"
 #include "task_priorities.h"
 #include "usb/usb_host.h"
 #include "usb_comms.h"
-#include "usb_tonex_one.h"
 #include "midi_helper.h"
-#include "tonex_params.h"
 
 #define FOOTSWITCH_TASK_STACK_SIZE          (3 * 1024)
 #define FOOTSWITCH_SAMPLE_COUNT             5       // 20 msec per sample

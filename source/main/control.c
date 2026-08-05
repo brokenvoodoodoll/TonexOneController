@@ -16,29 +16,18 @@ limitations under the License.
 */
 
 
-#include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
-#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
-#include "esp_check.h"
 #include "esp_log.h"
 #include "usb/usb_host.h"
-#include "driver/i2c_master.h"
 #include "nvs_flash.h"
-#include "sys/param.h"
-#include "main.h"
 #include "control.h"
 #include "usb_comms.h"
-#include "usb/usb_host.h"
-#include "usb_tonex_one.h"
-#include "footswitches.h"
 #include "task_priorities.h"
 #include "tonex_params.h"
-#include "midi_helper.h"
 
 #define CTRL_TASK_STACK_SIZE                (3 * 1024)
 
