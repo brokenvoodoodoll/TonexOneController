@@ -623,13 +623,13 @@ void footswitch_task(void *arg)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     // load config for internal effect buttons
-    for (configs = 0; configs < MAX_INTERNAL_EFFECT_FOOTSWITCHES; configs++)
-    {
-        FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Switch = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_SW + (configs * 4));
-        FootswitchControl.OnboardFootswitchEffectHandler[configs].config.CC = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_CC + (configs * 4));
-        FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_1 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL1 + (configs * 4));
-        FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_2 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL2 + (configs * 4));
-    }
+    // for (configs = 0; configs < MAX_INTERNAL_EFFECT_FOOTSWITCHES; configs++)
+    // {
+    //     FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Switch = configs + 3;
+    //     FootswitchControl.OnboardFootswitchEffectHandler[configs].config.CC = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_CC + (configs * 4));
+    //     FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_1 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL1 + (configs * 4));
+    //     FootswitchControl.OnboardFootswitchEffectHandler[configs].config.Value_2 = control_get_config_item_int(CONFIG_ITEM_INT_FOOTSW_EFFECT1_VAL2 + (configs * 4));
+    // }
 
     // Default fallback mappings for buttons 4, 5, 6 if not set in NVS
     // Button 4 (Switch 3): Stomp / Comp CC 14
@@ -661,8 +661,8 @@ void footswitch_task(void *arg)
     FootswitchControl.PresetsHandler.footswitch_single_reader = &footswitch_read_single_onboard;
     FootswitchControl.PresetsHandler.footswitch_multiple_reader = &footswitch_read_multiple_onboard;
 
-    FootswitchControl.PresetsHandler.footswitch_single_reader = &footswitch_read_single_onboard;
-    FootswitchControl.PresetsHandler.footswitch_multiple_reader = &footswitch_read_multiple_onboard;
+    FootswitchControl.EffectsHandler.footswitch_single_reader = &footswitch_read_single_onboard;
+    FootswitchControl.EffectsHandler.footswitch_multiple_reader = &footswitch_read_multiple_onboard;
 
     while (1)
     {
