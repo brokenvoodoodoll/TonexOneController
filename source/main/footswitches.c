@@ -657,35 +657,6 @@ void footswitch_task(void *arg)
         // handle effects switching
         footswitch_handle_effects(&FootswitchControl.EffectsHandler, FootswitchControl.OnboardFootswitchEffectHandler);
 
-        // Binary footswitch modes always hold button states, so can't check for reset
-        // check for button held for data reset
-        if (FOOTSWITCH_1 != -1)
-        {
-            if (footswitch_read_single_onboard(0, &value) == ESP_OK)
-            {
-                if (value == 1)
-                {
-                    reset_timer++;
-
-                    // debug
-                    //ESP_LOGI(TAG, "Reset timer: %d", (int)reset_timer);
-
-                    if (reset_timer > BUTTON_FACTORY_RESET_TIME)
-                    {
-                        ESP_LOGI(TAG, "Config Reset to default");
-                        control_set_default_config();
-
-                        // save and reboot
-                        control_save_user_data(1);
-                    }
-                }
-                else
-                {
-                    reset_timer = 0;
-                }
-            }
-        }
-
         vTaskDelay(pdMS_TO_TICKS(20));
     }
 }

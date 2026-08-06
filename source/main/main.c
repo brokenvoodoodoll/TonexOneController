@@ -40,6 +40,7 @@ limitations under the License.
 #include "esp_private/periph_ctrl.h"
 #include "sdmmc_cmd.h"
 
+#include "soc/rtc_cntl_reg.h"
 #include "main.h"
 #include "task_priorities.h"
 #include "usb_comms.h"
@@ -57,6 +58,44 @@ limitations under the License.
 #define I2C_CLR_BUS_HALF_PERIOD_US     (5)
 
 static const char *TAG = "app_main";
+
+static void check_boot_mode(void)
+{
+    if (FOOTSWITCH_1 < 0) return;
+
+    // Give 9V power supply, USB power rails & ground levels time to stabilize after power-on
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << FOOTSWITCH_1),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&io_conf);
+    esp_rom_delay_us(5000);
+
+    // Multi-sample over 100ms to filter out ground bounce and power-on noise
+    int low_count = 0;
+    for (int i = 0; i < 10; i++)
+    {
+        if (gpio_get_level(FOOTSWITCH_1) == 0)
+        {
+            low_count++;
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    if (low_count >= 8)
+    {
+        ESP_LOGW(TAG, "Footswitch 1 confirmed held on power-up! Rebooting to USB Bootloader mode...");
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+        REG_SET_BIT(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
+        esp_restart();
+    }
+}
 
 __attribute__((unused)) SemaphoreHandle_t I2CMutex_1;
 __attribute__((unused)) SemaphoreHandle_t I2CMutex_2;
@@ -139,6 +178,9 @@ static esp_err_t i2c_master_init(i2c_master_bus_handle_t *bus_handle, uint32_t p
 
 void app_main(void)
 {
+    // Check if Footswitch 1 is held down on power up to enter bootloader mode
+    check_boot_mode();
+
     ESP_LOGI(TAG, "ToneX One Controller App start");
 
     // load the config first
